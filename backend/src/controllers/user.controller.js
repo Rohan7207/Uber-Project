@@ -25,4 +25,33 @@ async function registerUser(req, res, next) {
   return res.status(201).json({ token, user });
 }
 
-module.exports = { registerUser };
+async function loginUser(req, res, next) {
+  const errors = validationResult(req);
+
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ errors: errors.array() });
+  }
+
+  const { email, password } = req.body;
+
+  // We write select(+password) bcz by default while querying in user schema password is not retrived to retrive that we must use select
+  const user = await userModel.findOne({ email }).select("+password");
+
+  if (!user) {
+    return res.status(401).json({ message: "Invalid email or password" });
+  }
+
+  const isCorrectPassword = await user.comparePassword(password);
+
+  if (!isCorrectPassword) {
+    return res.status(401).json({ message: "Invalid email or passowrd" });
+  }
+
+  const token = user.generateAuthToken();
+
+  res.status(200).json({ token, user });
+}
+
+async function getUserProfile(req, res, next) {}
+
+module.exports = { registerUser, loginUser };

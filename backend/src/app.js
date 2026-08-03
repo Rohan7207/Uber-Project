@@ -13,6 +13,6 @@ app.get("/", (req, res) => {
   res.send("Hello World!");
 });
 
-app.use("users", authRoutes);
+app.use("/users", authRoutes);
 
 module.exports = app;
