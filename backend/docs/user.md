@@ -178,3 +178,125 @@ Returned when the email does not exist or the password is incorrect.
 
 - **email** must be a valid email address.
 - **password** must contain at least **6** characters.
+
+---
+
+# `/users/profile` Endpoint
+
+### Description
+
+Retrieves the profile information of the currently authenticated user. This endpoint can only be accessed by users with a valid JWT authentication token.
+
+---
+
+### HTTP Method
+
+`GET`
+
+---
+
+### Authentication
+
+JWT Token Required
+
+---
+
+### Headers
+
+```http
+Authorization: Bearer <JWT_TOKEN>
+```
+
+---
+
+### Example Response
+
+```json
+{
+  "_id": "6892f1e5d7b8c123456789ab",
+  "fullname": {
+    "firstname": "John",
+    "lastname": "Doe"
+  },
+  "email": "john@example.com",
+  "socketId": null
+}
+```
+
+---
+
+### Error Responses
+
+#### 401 Unauthorized
+
+```json
+{
+  "message": "Unauthorized"
+}
+```
+
+---
+
+### Status Codes
+
+- **200 OK** – User profile retrieved successfully.
+- **401 Unauthorized** – Invalid, expired, missing, or blacklisted JWT token.
+- **500 Internal Server Error** – An unexpected error occurred while processing the request.
+
+---
+
+# `/users/logout` Endpoint
+
+### Description
+
+Logs out the currently authenticated user by clearing the authentication cookie and adding the JWT token to the blacklist. Any blacklisted token cannot be used to access protected routes again.
+
+---
+
+### HTTP Method
+
+`GET`
+
+---
+
+### Authentication
+
+JWT Token Required
+
+---
+
+### Headers
+
+```http
+Authorization: Bearer <JWT_TOKEN>
+```
+
+---
+
+### Success Response
+
+```json
+{
+  "message": "Logged out"
+}
+```
+
+---
+
+### Error Responses
+
+#### 401 Unauthorized
+
+```json
+{
+  "message": "Unauthorized"
+}
+```
+
+---
+
+### Status Codes
+
+- **200 OK** – User logged out successfully.
+- **401 Unauthorized** – Invalid, expired, missing, or blacklisted JWT token.
+- **500 Internal Server Error** – An unexpected error occurred while processing the request.
