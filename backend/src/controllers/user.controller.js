@@ -22,7 +22,9 @@ async function registerUser(req, res, next) {
 
   const token = user.generateAuthToken();
 
-  return res.status(201).json({ token, user });
+  res.cookie("token", token);
+
+  return res.status(201).json({ user });
 }
 
 async function loginUser(req, res, next) {
@@ -49,9 +51,16 @@ async function loginUser(req, res, next) {
 
   const token = user.generateAuthToken();
 
-  res.status(200).json({ token, user });
+  res.cookie("token", token);
+
+  res.status(200).json({ user });
 }
 
-async function getUserProfile(req, res, next) {}
+async function getUserProfile(req, res, next) {
+  // In this we should show profile to particular user who is logged in, we need to check whether
+  // user is authenticated and show his details if not authenticated we will return unauthorize access. We wiil do this in auth middleware
 
-module.exports = { registerUser, loginUser };
+  return res.status(200).json(req.user);
+}
+
+module.exports = { registerUser, loginUser, getUserProfile };
