@@ -12,6 +12,12 @@ async function registerUser(req, res, next) {
 
   const { fullname, lastname, email, password } = req.body;
 
+  const isUserAlreadyExists = await userModel.findOne({ email });
+
+  if (isUserAlreadyExists) {
+    return res.status(400).json({ message: "User already exists" });
+  }
+
   const hashPassword = await userModel.hashPassword(password);
 
   const user = await userService.createUser({
@@ -23,7 +29,13 @@ async function registerUser(req, res, next) {
 
   const token = user.generateAuthToken();
 
-  res.cookie("token", token);
+  res.cookie("token", token, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "strict",
+  });
+
+  user.password = undefined;
 
   return res.status(201).json({ user });
 }
@@ -52,7 +64,11 @@ async function loginUser(req, res, next) {
 
   const token = user.generateAuthToken();
 
-  res.cookie("token", token);
+  res.cookie("token", token, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "strict",
+  });
 
   res.status(200).json({ user });
 }
@@ -66,7 +82,11 @@ async function getUserProfile(req, res, next) {
 
 async function logoutUser(req, res, next) {
   // We will add token to blacklisttoken database where token expires in 24hrs
-  res.clearCookie("token");
+  res.clearCookie("token", {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "strict",
+  });
 
   const token = req.cookies.token || req.headers.authorization?.split(" ")[1];
 
