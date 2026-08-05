@@ -2,6 +2,7 @@ const userModel = require("../models/user.model");
 const userService = require("../services/user.service");
 const { validationResult } = require("express-validator"); // If data is not valid then we validated it in routes where we set it in errors
 const blacklistTokenModel = require("../models/blacklistToken");
+const cookieOptions = require("../utils/cookieOptions.util");
 
 async function registerUser(req, res, next) {
   const errors = validationResult(req);
@@ -29,11 +30,7 @@ async function registerUser(req, res, next) {
 
   const token = user.generateAuthToken();
 
-  res.cookie("token", token, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "strict",
-  });
+  res.cookie("token", token, cookieOptions);
 
   user.password = undefined;
 
@@ -64,11 +61,7 @@ async function loginUser(req, res, next) {
 
   const token = user.generateAuthToken();
 
-  res.cookie("token", token, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "strict",
-  });
+  res.cookie("token", token, cookieOptions);
 
   res.status(200).json({ user });
 }
