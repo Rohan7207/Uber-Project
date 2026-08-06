@@ -255,7 +255,7 @@ Logs out the currently authenticated user by clearing the authentication cookie 
 
 ### HTTP Method
 
-`GET`
+`POST`
 
 ---
 

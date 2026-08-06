@@ -31,7 +31,7 @@ module.exports.authUser = async (req, res, next) => {
 };
 
 module.exports.authCaptain = async (req, res, next) => {
-  // The token is can be present in cookie or headers
+  // The token can be present in cookie or headers
   const token = req.cookies.token || req.headers.authorization?.split(" ")[1];
 
   if (!token) {

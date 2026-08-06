@@ -252,3 +252,146 @@ Returned when the provided email or password is incorrect.
 
 - **email** must be a valid email address.
 - **password** must contain at least **6** characters.
+
+---
+
+# `/captains/profile` Endpoint
+
+### Description
+
+Retrieves the profile information of the currently authenticated captain. This endpoint can only be accessed by captains with a valid JWT authentication token.
+
+---
+
+### HTTP Method
+
+`GET`
+
+---
+
+### Authentication
+
+JWT Token Required
+
+---
+
+### Headers
+
+```http
+Authorization: Bearer <JWT_TOKEN>
+```
+
+> **Note:** The JWT token can also be provided through the HTTP-only cookie named `token`.
+
+---
+
+### Success Response
+
+#### 200 OK
+
+```json
+{
+  "captain": {
+    "_id": "6a7348c02e60e247e8730b86",
+    "fullname": {
+      "firstname": "test3_captain_firstname",
+      "lastname": "test3_captain_lastname"
+    },
+    "email": "test3captain@test.com",
+    "status": "inactive",
+    "vehicle": {
+      "color": "Blue",
+      "plate": "KA 42 XY 1111",
+      "capacity": 7,
+      "vehicleType": "car"
+    },
+    "location": {
+      "lat": null,
+      "lng": null
+    },
+    "__v": 0
+  }
+}
+```
+
+---
+
+### Error Responses
+
+#### 401 Unauthorized
+
+```json
+{
+  "message": "Unauthorized"
+}
+```
+
+---
+
+### Status Codes
+
+- **200 OK** – Captain profile retrieved successfully.
+- **401 Unauthorized** – Missing, invalid, expired, or blacklisted JWT token.
+- **500 Internal Server Error** – An unexpected error occurred while processing the request.
+
+---
+
+# `/captains/logout` Endpoint
+
+### Description
+
+Logs out the currently authenticated captain by adding the current JWT token to the blacklist and clearing the authentication cookie. Once logged out, the blacklisted token can no longer be used to access protected endpoints.
+
+---
+
+### HTTP Method
+
+`POST`
+
+---
+
+### Authentication
+
+JWT Token Required
+
+---
+
+### Headers
+
+```http
+Authorization: Bearer <JWT_TOKEN>
+```
+
+> **Note:** The JWT token can also be provided through the HTTP-only cookie named `token`.
+
+---
+
+### Success Response
+
+#### 200 OK
+
+```json
+{
+  "message": "Logout Successful"
+}
+```
+
+---
+
+### Error Responses
+
+#### 401 Unauthorized
+
+```json
+{
+  "message": "Unauthorized"
+}
+```
+
+---
+
+### Status Codes
+
+- **200 OK** – Captain logged out successfully.
+- **401 Unauthorized** – Missing, invalid, expired, or blacklisted JWT token.
+- **500 Internal Server Error** – An unexpected error occurred while processing the request.
