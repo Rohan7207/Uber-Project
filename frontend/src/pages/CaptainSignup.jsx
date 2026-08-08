@@ -12,9 +12,9 @@ const CaptainSignup = () => {
     e.preventDefault();
 
     setUserData({
-      fullName: {
-        firstName: firstName,
-        lastName: lastName,
+      fullname: {
+        firstname: firstName,
+        lastname: lastName,
       },
       email: email,
       password: password,
@@ -77,6 +77,7 @@ const CaptainSignup = () => {
               setEmail(e.target.value);
             }}
             type="email"
+            autoComplete="off"
             placeholder="email@example.com"
           />
           <h3 className="text-lg font-medium mb-2">Enter Password</h3>
@@ -88,10 +89,11 @@ const CaptainSignup = () => {
             }}
             className="bg-[#eeeeee] mb-6 rounded px-4 py-2 border w-full text-lg placeholder:text-base"
             type="password"
+            autoComplete="new-password"
             placeholder="password"
           />
           <button className="bg-[#111]  text-white font-semibold mb-3 rounded px-4 py-2  w-full text-lg placeholder:text-lg">
-            Login
+            Create account
           </button>
         </form>
         <p className="text-center">

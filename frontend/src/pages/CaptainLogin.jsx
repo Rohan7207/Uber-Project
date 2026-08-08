@@ -41,6 +41,7 @@ const CaptainLogin = () => {
               setEmail(e.target.value);
             }}
             type="email"
+            autoComplete="off"
             placeholder="email@example.com"
           />
           <h3 className="text-lg font-medium mb-2">Enter Password</h3>
@@ -52,6 +53,7 @@ const CaptainLogin = () => {
             }}
             className="bg-[#eeeeee] mb-7 rounded px-4 py-2 border w-full text-lg placeholder:text-base"
             type="password"
+            autoComplete="off"
             placeholder="password"
           />
           <button className="bg-[#111]  text-white font-semibold mb-3 rounded px-4 py-2  w-full text-lg placeholder:text-base">

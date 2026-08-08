@@ -34,7 +34,7 @@ async function registerUser(req, res, next) {
 
   user.password = undefined;
 
-  return res.status(201).json({ user });
+  return res.status(201).json({ user, token });
 }
 
 async function loginUser(req, res, next) {
@@ -63,7 +63,7 @@ async function loginUser(req, res, next) {
 
   res.cookie("token", token, cookieOptions);
 
-  res.status(200).json({ user });
+  res.status(200).json({ user, token });
 }
 
 async function getUserProfile(req, res, next) {
