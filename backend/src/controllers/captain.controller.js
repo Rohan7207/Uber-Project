@@ -5,40 +5,46 @@ const cookieOptions = require("../utils/cookieOptions.util");
 const blacklistToken = require("../models/blacklistToken");
 
 async function registerCaptain(req, res, next) {
-  const errors = validationResult(req);
+  try {
+    const errors = validationResult(req);
 
-  if (!errors.isEmpty()) {
-    return res.status(400).json({ errors: errors.array() });
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
+
+    const { fullname, email, password, vehicle } = req.body;
+
+    const isCaptainAlreadyExists = await captainModel.findOne({ email });
+
+    if (isCaptainAlreadyExists) {
+      return res.status(400).json({ message: "Captain already exists" });
+    }
+
+    const hashedPassword = await captainModel.hashPassword(password);
+
+    const captain = await captainService.createCaptain({
+      firstname: fullname.firstname,
+      lastname: fullname.lastname,
+      email,
+      password: hashedPassword,
+      color: vehicle.color,
+      plate: vehicle.plate,
+      capacity: vehicle.capacity,
+      vehicleType: vehicle.vehicleType,
+    });
+
+    const token = captain.generateAuthToken();
+
+    res.cookie("token", token, cookieOptions);
+
+    captain.password = undefined;
+
+    return res.status(201).json({ captain });
+  } catch (err) {
+    console.log("ERROR:", error);
+    console.log("RESPONSE:", error.response);
+    console.log("DATA:", error.response?.data);
   }
-
-  const { fullname, email, password, vehicle } = req.body;
-
-  const isCaptainAlreadyExists = await captainModel.findOne({ email });
-
-  if (isCaptainAlreadyExists) {
-    return res.status(400).json({ message: "Captain already exists" });
-  }
-
-  const hashedPassword = await captainModel.hashPassword(password);
-
-  const captain = await captainService.createCaptain({
-    firstname: fullname.firstname,
-    lastname: fullname.lastname,
-    email,
-    password: hashedPassword,
-    color: vehicle.color,
-    plate: vehicle.plate,
-    capacity: vehicle.capacity,
-    vehicleType: vehicle.vehicleType,
-  });
-
-  const token = captain.generateAuthToken();
-
-  res.cookie("token", token, cookieOptions);
-
-  captain.password = undefined;
-
-  return res.status(201).json({ captain });
 }
 
 async function loginCaptain(req, res, next) {
