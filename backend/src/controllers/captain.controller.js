@@ -39,11 +39,9 @@ async function registerCaptain(req, res, next) {
 
     captain.password = undefined;
 
-    return res.status(201).json({ captain });
+    return res.status(201).json({ captain, token });
   } catch (err) {
-    console.log("ERROR:", error);
-    console.log("RESPONSE:", error.response);
-    console.log("DATA:", error.response?.data);
+    console.error(err);
   }
 }
 
@@ -74,7 +72,7 @@ async function loginCaptain(req, res, next) {
 
   captain.password = undefined;
 
-  return res.status(200).json({ captain: captain });
+  return res.status(200).json({ captain: captain, token });
 }
 
 async function getCaptainProfile(req, res, next) {

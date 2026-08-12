@@ -23,7 +23,7 @@ const CaptainSignup = () => {
     e.preventDefault();
 
     const newCaptainData = {
-      fullName: {
+      fullname: {
         firstname: firstName,
         lastname: lastName,
       },
@@ -37,26 +37,30 @@ const CaptainSignup = () => {
       },
     };
 
-    const response = await axios.post(
-      `${import.meta.env.VITE_BASE_URL}/captains/register`,
-      newCaptainData,
-    );
+    try {
+      const response = await axios.post(
+        `${import.meta.env.VITE_BASE_URL}/captains/register`,
+        newCaptainData,
+      );
 
-    if (response.status === 201) {
-      const data = response.data;
-      setCaptain(data.captain);
-      localStorage.setItem("token", data.token);
-      navigate("/captain-home");
+      if (response.status === 201) {
+        const data = response.data;
+        setCaptain(data.captain);
+        localStorage.setItem("token", data.token);
+        navigate("/captain-home");
+      }
+
+      setEmail("");
+      setPassword("");
+      setFirstName("");
+      setLastName("");
+      setVehicleColor("");
+      setVehiclePlate("");
+      setVehicleCapacity("");
+      setvehicleType("");
+    } catch (err) {
+      console.log(err.response?.data);
     }
-
-    setEmail("");
-    setPassword("");
-    setFirstName("");
-    setLastName("");
-    setVehicleColor("");
-    setVehiclePlate("");
-    setVehicleCapacity("");
-    setvehicleType("");
   };
 
   return (

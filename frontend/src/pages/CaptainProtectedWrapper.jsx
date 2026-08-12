@@ -1,38 +1,38 @@
-import React, { useContext, useEffect } from "react";
-import { UserDataContext } from "../context/UserContext";
+import React, { useContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { CaptainDataContext } from "../context/CaptainContext";
 import axios from "axios";
 
 // It checks if user exists in database it returns that children and if not it returns that user to login page
-const UserProtectedWrapper = ({ children }) => {
+const CaptainProtectedWrapper = ({ children }) => {
   const token = localStorage.getItem("token");
   const navigate = useNavigate();
-  const { user, setUser } = useContext(UserDataContext);
+  const { captain, setCaptain } = useContext(CaptainDataContext);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     if (!token) {
-      navigate("/login");
+      navigate("/captain-login");
     }
 
     axios
-      .get(`${import.meta.env.VITE_BASE_URL}/users/profile`, {
+      .get(`${import.meta.env.VITE_BASE_URL}/captains/profile`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
       })
       .then((response) => {
         if (response.status === 200) {
-          setUser(response.data.user);
-          isLoading(false);
+          setCaptain(response.data.captain);
+          setIsLoading(false);
         }
       })
       .catch((err) => {
         console.log(err);
         localStorage.removeItem("token");
-        navigate("/login");
+        navigate("/captain-login");
       });
-  }, [token]);
+  }, [token, navigate, isLoading]);
 
   if (isLoading) {
     return <div>Loading...</div>;
@@ -41,4 +41,4 @@ const UserProtectedWrapper = ({ children }) => {
   return <>{children}</>;
 };
 
-export default UserProtectedWrapper;
+export default CaptainProtectedWrapper;
