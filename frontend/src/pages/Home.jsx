@@ -5,6 +5,8 @@ import gsap from "gsap";
 import "remixicon/fonts/remixicon.css";
 import LocationSearchPanel from "../components/LocationSearchPanel";
 import carImage from "../assets/car_png.jpg";
+import bikeImage from "../assets/bike_png.jpg";
+import autoImage from "../assets/auto.jpg";
 
 const Home = () => {
   const [pickUp, setPickUp] = useState("");
@@ -12,6 +14,8 @@ const Home = () => {
   const [panelOpen, setPanelOpen] = useState(false);
   const panelRef = useRef(null);
   const panelCloseRef = useRef(null);
+  const vehiclePanelRef = useRef(null);
+  const [vehiclePanelOpen, setVehiclePanelOpen] = useState(false);
 
   const submitHandler = (e) => {
     e.preventDefault();
@@ -40,6 +44,21 @@ const Home = () => {
     [panelOpen],
   );
 
+  useGSAP(
+    function () {
+      if (vehiclePanelOpen) {
+        gsap.to(vehiclePanelRef.current, {
+          transform: "translateY(0)",
+        });
+      } else {
+        gsap.to(vehiclePanelRef.current, {
+          transform: "translateY(100%)",
+        });
+      }
+    },
+    [vehiclePanelOpen],
+  );
+
   return (
     <div className="h-screen relative overflow-hidden">
       <img
@@ -48,7 +67,12 @@ const Home = () => {
         alt="Home_Uber_Logo"
       />
 
-      <div className="h-screen w-screen">
+      <div
+        onClick={() => {
+          setVehiclePanelOpen(false);
+        }}
+        className="h-screen w-screen"
+      >
         {/* Image for temporary use */}
         <img className="h-full w-full object-cover" src={homeLogo} alt="Map" />
       </div>
@@ -99,24 +123,69 @@ const Home = () => {
         </div>
 
         <div ref={panelRef} className="h-0 bg-white">
-          {<LocationSearchPanel />}
+          {
+            <LocationSearchPanel
+              setPanelOpen={setPanelOpen}
+              setVehiclePanelOpen={setVehiclePanelOpen}
+            />
+          }
         </div>
       </div>
 
-      <div className="fixed z-10 bottom-0">
-        <div>
-          <img src={carImage} alt="Car Image" />
-          <div>
-            <h4>
+      <div
+        ref={vehiclePanelRef}
+        className="fixed w-full z-10 px-3 py-8 translate-y-full bg-white bottom-0"
+      >
+        <h3 className="text-2xl font-semibold mb-5">Choose a Vehicle</h3>
+        <div className="flex border-2 mb-2 active:border-black rounded-xl  w-full p-3 items-center justify-between">
+          <img className="h-[3.9rem]" src={carImage} alt="Car Image" />
+          <div className="ml-2 w-1/2">
+            <h4 className="font-medium text-base">
               UberGo{" "}
               <span>
                 <i className="ri-user-3-fill">4</i>
               </span>
             </h4>
-            <h5>2 mins away </h5>
-            <p>Affordable, compact rides</p>
+            <h5 className="font-medium text-sm">2 mins away </h5>
+            <p className="font-norma; text-xs text-gray-600">
+              Affordable, compact rides
+            </p>
           </div>
-          <h2></h2>
+          <h2 className="text-lg font-semibold">₹193.20</h2>
+        </div>
+
+        <div className="flex border-2 mb-2 active:border-black rounded-xl  w-full p-3 items-center justify-between">
+          <img className="h-10" src={bikeImage} alt="Car Image" />
+          <div className="ml-2 w-1/2">
+            <h4 className="font-medium text-base">
+              Moto{" "}
+              <span>
+                <i className="ri-user-3-fill">1</i>
+              </span>
+            </h4>
+            <h5 className="font-medium text-sm">3 mins away </h5>
+            <p className="font-norma; text-xs text-gray-600">
+              Affordabl motorcycle rides
+            </p>
+          </div>
+          <h2 className="text-lg font-semibold">₹65.17</h2>
+        </div>
+
+        <div className="flex border-2 mb-2 active:border-black rounded-xl  w-full p-3 items-center justify-between">
+          <img className="h-12" src={autoImage} alt="Car Image" />
+          <div className="ml-2 w-1/2">
+            <h4 className="font-medium text-base">
+              UberAuto{" "}
+              <span>
+                <i className="ri-user-3-fill">3</i>
+              </span>
+            </h4>
+            <h5 className="font-medium text-sm">2 mins away </h5>
+            <p className="font-norma; text-xs text-gray-600">
+              Affordable Auto rides
+            </p>
+          </div>
+          <h2 className="text-lg font-semibold">₹118.21</h2>
         </div>
       </div>
     </div>
