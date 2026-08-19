@@ -7,12 +7,12 @@ const VehiclePanel = (props) => {
   return (
     <div>
       <h5
-        className="p-1 pl-10 text-center w-[95%] absolute "
+        className="p-1 text-center w-[95%] absolute top-0 "
         onClick={() => {
           props.setVehiclePanelOpen(false);
         }}
       >
-        <i className="text-2xl text-black-200 ri-arrow-down-wide-line"></i>
+        <i className="text-2xl text-gray-500 ri-arrow-down-wide-line"></i>
       </h5>
       <h3 className="text-2xl font-semibold mb-5">Choose a Vehicle</h3>
       <div
