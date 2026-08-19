@@ -1,5 +1,6 @@
 import React, { useRef, useState } from "react";
-import homeLogo from "../assets/map_image.gif";
+import map from "../assets/map_image.gif";
+import homoUberLogo from "../assets/home_Uberlogo.png";
 import { useGSAP } from "@gsap/react"; //  GSAP is animation hook
 import gsap from "gsap";
 import "remixicon/fonts/remixicon.css";
@@ -115,7 +116,7 @@ const Home = () => {
     <div className="h-screen relative overflow-hidden">
       <img
         className="w-16 absolute left-5 top-5"
-        src={homeLogo}
+        src={homoUberLogo}
         alt="Home_Uber_Logo"
       />
 
@@ -126,7 +127,7 @@ const Home = () => {
         className="h-screen w-screen"
       >
         {/* Image for temporary use */}
-        <img className="h-full w-full object-cover" src={homeLogo} alt="Map" />
+        <img className="h-full w-full object-cover" src={map} alt="Map" />
       </div>
 
       <div className="flex flex-col justify-end h-screen absolute top-0 w-full ">
@@ -213,7 +214,7 @@ const Home = () => {
 
       <div
         ref={waitingForDriverRef}
-        className="fixed w-full z-10 px-3 py-6 pt-12  bg-white bottom-0"
+        className="fixed w-full z-10 px-3 py-6 pt-12 translate-y-full bg-white bottom-0"
       >
         <WaitingForDriver setWaitingForDriver={setWaitingForDriver} />
       </div>
