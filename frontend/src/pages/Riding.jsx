@@ -1,5 +1,5 @@
 import React from "react";
-import map from "../assets/map_image.gif";
+import map2 from "../assets/map2.gif";
 import carImage from "../assets/car_png.jpg";
 import { Link } from "react-router-dom";
 
@@ -14,7 +14,7 @@ const Riding = () => {
       </Link>
 
       <div className="h-1/2">
-        <img className="h-full w-full object-cover" src={map} alt="Map" />
+        <img className="h-full w-full object-cover" src={map2} alt="Map" />
       </div>
       <div className="h-1/2 p-4">
         <div className="flex items-center justify-between right-2">
