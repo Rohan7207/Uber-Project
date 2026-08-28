@@ -5,6 +5,7 @@ const cors = require("cors"); // Import cors module to handle cross-origin reque
 const cookieParser = require("cookie-parser");
 const authRoutes = require("./routes/user.routes");
 const captainRoutes = require("./routes/captain.routes");
+const mapRoutes = require("./routes/maps.routes");
 
 const app = express();
 app.use(cors()); // For now, allow all origins. In production, we allow only specific origins.
@@ -18,5 +19,6 @@ app.get("/", (req, res) => {
 
 app.use("/users", authRoutes);
 app.use("/captains", captainRoutes);
+app.use("/maps", mapRoutes);
 
 module.exports = app;
