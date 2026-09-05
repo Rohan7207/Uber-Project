@@ -2,8 +2,15 @@ import React from "react";
 import map2 from "../assets/map2.gif";
 import carImage from "../assets/car_png.jpg";
 import { Link } from "react-router-dom";
+import { formatAddress, formatPrice } from "../utils/formatters";
 
 const Riding = () => {
+  const pickupAddress = formatAddress("Sambrani, Haliyala Taluku, Karnataka, India");
+  const destinationAddress = formatAddress(
+    "Gundolli, Haliyala Taluku, Karnataka, India",
+  );
+  const fare = 193.2;
+
   return (
     <div className="h-screen">
       <Link
@@ -34,10 +41,8 @@ const Riding = () => {
                 <i className="text-lg ri-map-pin-2-fill"></i>
               </h4>
               <div>
-                <h3 className="text-lg font-medium">562/11-A</h3>
-                <p className="text-sm -mt-1 text-gray-600">
-                  Kankariya Talab, Karnataka
-                </p>
+                <h3 className="text-lg font-medium">Pickup</h3>
+                <p className="text-sm -mt-1 text-gray-600">{pickupAddress}</p>
               </div>
             </div>
 
@@ -47,7 +52,7 @@ const Riding = () => {
                 <i className="ri-bank-card-fill"></i>
               </h4>
               <div>
-                <h3 className="text-lg font-medium">₹193.20</h3>
+                <h3 className="text-lg font-medium">{formatPrice(fare)}</h3>
                 <p className="text-sm -mt-1 text-gray-600">Cash</p>
               </div>
             </div>

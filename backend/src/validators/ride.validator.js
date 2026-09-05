@@ -23,6 +23,10 @@ module.exports.rideValidator = [
     .isString()
     .isIn(["auto", "car", "motorcycle"])
     .withMessage("Invalid vehicle type"),
+  body("quoteId")
+    .optional({ checkFalsy: true })
+    .isString()
+    .withMessage("Invalid ride quote ID"),
 
   validateRequest,
 ];

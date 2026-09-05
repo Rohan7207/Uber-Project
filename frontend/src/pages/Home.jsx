@@ -13,9 +13,10 @@ import WaitingForDriver from "../components/WaitingForDriver";
 import axios from "axios";
 
 const Home = () => {
-  const [pickUp, setPickUp] = useState("");
+  const [pickup, setPickup] = useState("");
   const [destination, setDestination] = useState("");
   const [suggestions, setSuggestions] = useState([]);
+  const [suggestionStatus, setSuggestionStatus] = useState("idle");
   const [focusedField, setFocusedField] = useState("pickup");
   const [queryTimeout, setQueryTimeout] = useState(null);
   const [panelOpen, setPanelOpen] = useState(false);
@@ -30,6 +31,11 @@ const Home = () => {
   const [waitingForDriver, setWaitingForDriver] = useState(false);
   const waitingForDriverRef = useRef(null);
   const [fare, setFare] = useState({});
+  const [quoteId, setQuoteId] = useState("");
+  const [selectedVehicle, setSelectedVehicle] = useState("car");
+  const [fareLoading, setFareLoading] = useState(false);
+  const [fareError, setFareError] = useState("");
+
   const navigate = useNavigate();
 
   const submitHandler = (e) => {
@@ -53,10 +59,13 @@ const Home = () => {
         },
       );
 
-      if (res && res.data) setSuggestions(res.data);
+      const data = Array.isArray(res?.data) ? res.data : [];
+      setSuggestions(data);
+      setSuggestionStatus(data.length ? "success" : "not-found");
     } catch (err) {
       console.error("Autocomplete error", err?.response || err.message);
       setSuggestions([]);
+      setSuggestionStatus("error");
     }
   };
 
@@ -65,7 +74,10 @@ const Home = () => {
     const t = setTimeout(() => {
       const v = value?.trim() || "";
       if (v.length >= 2) fetchSuggestions(v);
-      else setSuggestions([]);
+      else {
+        setSuggestions([]);
+        setSuggestionStatus("idle");
+      }
     }, 300);
 
     setQueryTimeout(t);
@@ -78,6 +90,12 @@ const Home = () => {
       return;
     }
 
+    if (fareLoading) return;
+
+    setFareLoading(true);
+    setFareError("");
+    setFare({});
+    setQuoteId("");
     setVehiclePanelOpen(true);
     setPanelOpen(false);
 
@@ -92,10 +110,53 @@ const Home = () => {
         },
       );
 
-      console.log(response.data);
-      setFare(response.data || {});
+      const responseData = response.data || {};
+      setFare(responseData.fares ? responseData : {});
+      setQuoteId(responseData.quoteId || "");
     } catch (err) {
       console.error("Error fetching fare", err?.response || err.message);
+      setFare({});
+      setQuoteId("");
+      setFareError(
+        err?.response?.data?.message || "Unable to calculate fare right now.",
+      );
+    } finally {
+      setFareLoading(false);
+    }
+  }
+
+  async function createRide() {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      navigate("/login");
+      return;
+    }
+
+    setVehiclePanelOpen(true);
+    setPanelOpen(false);
+
+    try {
+      const response = await axios.post(
+        `${import.meta.env.VITE_BASE_URL}/rides/create`,
+        {
+          pickup,
+          destination,
+          vehicleType: selectedVehicle,
+          fare:
+            fare?.fares?.[selectedVehicle]?.estimatedFare ??
+            fare?.[selectedVehicle],
+          quoteId,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        },
+      );
+
+      console.log(response.data);
+    } catch (err) {
+      console.error("Error creating ride", err?.response || err.message);
     }
   }
 
@@ -228,9 +289,9 @@ const Home = () => {
                   setPanelOpen(true);
                   setFocusedField("pickup");
                 }}
-                value={pickUp}
+                value={pickup}
                 onChange={(e) => {
-                  setPickUp(e.target.value);
+                  setPickup(e.target.value);
                   setFocusedField("pickup");
                   scheduleFetch(e.target.value);
                 }}
@@ -265,6 +326,7 @@ const Home = () => {
           </form>
         </div>
 
+        {/* Location Panel */}
         <div ref={panelRef} className="h-0 bg-white px-6">
           {
             <LocationSearchPanel
@@ -272,6 +334,8 @@ const Home = () => {
               setVehiclePanelOpen={setVehiclePanelOpen}
               onFindTrip={findTrip}
               suggestions={suggestions}
+              suggestionStatus={suggestionStatus}
+              searchQuery={focusedField === "pickup" ? pickup : destination}
               onSelectSuggestion={(item) => {
                 const value =
                   typeof item === "string"
@@ -281,21 +345,27 @@ const Home = () => {
                       item.display_name ||
                       item.display;
 
-                if (focusedField === "pickup") setPickUp(value);
+                if (focusedField === "pickup") setPickup(value);
                 else setDestination(value);
 
                 setSuggestions([]);
+                setSuggestionStatus("idle");
               }}
             />
           }
         </div>
       </div>
 
+      {/* Vehicles Panel */}
       <div
         ref={vehiclePanelRef}
         className="fixed w-full z-10 px-3 py-10 pt-12 translate-y-full bg-white bottom-0"
       >
         <VehiclePanel
+          fare={fare}
+          fareLoading={fareLoading}
+          fareError={fareError}
+          setSelectedVehicle={setSelectedVehicle}
           setConfirmRidePanel={setConfirmRidePanel}
           setVehiclePanelOpen={setVehiclePanelOpen}
         />
@@ -306,6 +376,11 @@ const Home = () => {
         className="fixed w-full z-10 px-3 py-6 pt-12 translate-y-full bg-white bottom-0"
       >
         <ConfirmRide
+          pickup={pickup}
+          destination={destination}
+          fare={fare}
+          createRide={createRide}
+          vehicleType={selectedVehicle}
           setConfirmRidePanel={setConfirmRidePanel}
           setVehicleFound={setVehicleFound}
         />
@@ -315,14 +390,26 @@ const Home = () => {
         ref={vehicleFoundRef}
         className="fixed w-full z-10 px-3 py-6 pt-12 translate-y-full bg-white bottom-0"
       >
-        <LookingForDriver setVehicleFound={setVehicleFound} />
+        <LookingForDriver
+          pickup={pickup}
+          destination={destination}
+          fare={fare}
+          vehicleType={selectedVehicle}
+          setVehicleFound={setVehicleFound}
+        />
       </div>
 
       <div
         ref={waitingForDriverRef}
         className="fixed w-full z-10 px-3 py-6 pt-12 translate-y-full bg-white bottom-0"
       >
-        <WaitingForDriver setWaitingForDriver={setWaitingForDriver} />
+        <WaitingForDriver
+          pickup={pickup}
+          destination={destination}
+          fare={fare}
+          vehicleType={selectedVehicle}
+          setWaitingForDriver={setWaitingForDriver}
+        />
       </div>
     </div>
   );

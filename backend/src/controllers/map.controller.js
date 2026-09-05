@@ -27,10 +27,10 @@ async function getDistanceTime(req, res, next) {
   try {
     const { origin, destination } = req.query;
 
-    const originCoordinates = await mapService.getAddressCoordinate(origin);
-
-    const destinationCoordinates =
-      await mapService.getAddressCoordinate(destination);
+    const [originCoordinates, destinationCoordinates] = await Promise.all([
+      mapService.getAddressCoordinate(origin),
+      mapService.getAddressCoordinate(destination),
+    ]);
 
     const distanceTime = await mapService.getDistanceTime(
       originCoordinates.lat,
@@ -42,7 +42,10 @@ async function getDistanceTime(req, res, next) {
     res.status(200).json(distanceTime);
   } catch (err) {
     console.error(err);
-    res.status(500).json({ message: "Internal server error" });
+    const status = err.statusCode || 500;
+    res
+      .status(status)
+      .json({ message: err.message || "Internal server error" });
   }
 }
 

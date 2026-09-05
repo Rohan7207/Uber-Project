@@ -1,7 +1,26 @@
 import React from "react";
 import carImage from "../assets/car_png.jpg";
+import bikeImage from "../assets/bike_png.jpg";
+import autoImage from "../assets/auto.jpg";
+import { formatAddress, formatPrice } from "../utils/formatters";
 
 const WaitingForDriver = (props) => {
+  const imageMap = {
+    car: carImage,
+    motorcycle: bikeImage,
+    auto: autoImage,
+  };
+
+  const selectedImage = imageMap[props.vehicleType] || carImage;
+  const selectedFare =
+    props.fare?.fares?.[props.vehicleType]?.estimatedFare ??
+    props.fare?.[props.vehicleType] ??
+    0;
+  const pickupAddress = formatAddress(props.pickup || "Pickup location");
+  const destinationAddress = formatAddress(
+    props.destination || "Destination location",
+  );
+
   return (
     <div>
       <h5
@@ -14,7 +33,7 @@ const WaitingForDriver = (props) => {
       </h5>
 
       <div className="flex items-center justify-between">
-        <img className="h-[5rem]" src={carImage} alt="Car_image" />
+        <img className="h-[5rem]" src={selectedImage} alt="Ride vehicle" />
         <div className="text-right">
           <h2 className="text-lg font-medium">Karan</h2>
           <h4 className="text-xl font-semibold -mt-1 -mb-1">KA 15 AK 0001</h4>
@@ -30,10 +49,8 @@ const WaitingForDriver = (props) => {
               <i className="text-lg ri-map-pin-2-fill"></i>
             </h4>
             <div>
-              <h3 className="text-lg font-medium">562/11-A</h3>
-              <p className="text-sm -mt-1 text-gray-600">
-                Kankariya Talab, Karnataka
-              </p>
+              <h3 className="text-lg font-medium">Pickup</h3>
+              <p className="text-sm -mt-1 text-gray-600">{pickupAddress}</p>
             </div>
           </div>
 
@@ -43,7 +60,7 @@ const WaitingForDriver = (props) => {
               <i className="ri-bank-card-fill"></i>
             </h4>
             <div>
-              <h3 className="text-lg font-medium">₹193.20</h3>
+              <h3 className="text-lg font-medium">{formatPrice(selectedFare)}</h3>
               <p className="text-sm -mt-1 text-gray-600">Cash</p>
             </div>
           </div>

@@ -1,8 +1,18 @@
 import React from "react";
 import demoUser from "../assets/demo_user.jpg";
 import { Link } from "react-router-dom";
+import { formatAddress, formatPrice } from "../utils/formatters";
 
 const FinishRide = (props) => {
+  const pickupAddress = formatAddress(props.pickup || "Pickup location");
+  const destinationAddress = formatAddress(
+    props.destination || "Destination location",
+  );
+  const selectedFare =
+    props.fare?.fares?.[props.vehicleType]?.estimatedFare ??
+    props.fare?.[props.vehicleType] ??
+    0;
+
   return (
     <div>
       <h5
@@ -35,10 +45,8 @@ const FinishRide = (props) => {
               <i className="text-lg ri-map-pin-2-fill"></i>
             </h4>
             <div>
-              <h3 className="text-lg font-medium">562/11-A</h3>
-              <p className="text-sm -mt-1 text-gray-600">
-                Kankariya Talab, Karnataka
-              </p>
+              <h3 className="text-lg font-medium">Pickup</h3>
+              <p className="text-sm -mt-1 text-gray-600">{pickupAddress}</p>
             </div>
           </div>
 
@@ -48,9 +56,9 @@ const FinishRide = (props) => {
               <i className="ri-map-pin-user-fill"></i>
             </h4>
             <div>
-              <h3 className="text-lg font-medium">Third Wave Coffee</h3>
+              <h3 className="text-lg font-medium">Destination</h3>
               <p className="text-sm -mt-1 text-gray-600">
-                Kankariya Talab, Karnataka
+                {destinationAddress}
               </p>
             </div>
           </div>
@@ -61,7 +69,7 @@ const FinishRide = (props) => {
               <i className="ri-bank-card-fill"></i>
             </h4>
             <div>
-              <h3 className="text-lg font-medium">₹193.20</h3>
+              <h3 className="text-lg font-medium">{formatPrice(selectedFare)}</h3>
               <p className="text-sm -mt-1 text-gray-600">Cash</p>
             </div>
           </div>
