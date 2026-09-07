@@ -40,7 +40,17 @@ const LookingForDriver = (props) => {
 
           <div>
             <h3 className="text-lg font-medium">Pickup</h3>
-            <p className="text-sm -mt-1 text-gray-600">{pickupAddress}</p>
+            <p
+              className="text-sm -mt-1 text-gray-600 break-words whitespace-normal"
+              style={{
+                display: "-webkit-box",
+                WebkitLineClamp: 3,
+                WebkitBoxOrient: "vertical",
+                overflow: "hidden",
+              }}
+            >
+              {pickupAddress}
+            </p>
           </div>
         </div>
 
@@ -49,7 +59,17 @@ const LookingForDriver = (props) => {
 
           <div>
             <h3 className="text-lg font-medium">Destination</h3>
-            <p className="text-sm -mt-1 text-gray-600">{destinationAddress}</p>
+            <p
+              className="text-sm -mt-1 text-gray-600 break-words whitespace-normal"
+              style={{
+                display: "-webkit-box",
+                WebkitLineClamp: 3,
+                WebkitBoxOrient: "vertical",
+                overflow: "hidden",
+              }}
+            >
+              {destinationAddress}
+            </p>
           </div>
         </div>
 

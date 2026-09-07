@@ -1,4 +1,4 @@
-import React, { useRef, useState } from "react";
+import React, { useContext, useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import map2 from "../assets/map2.gif";
 import carImage from "../assets/car_png.jpg";
@@ -8,6 +8,8 @@ import RidePopUp from "../components/RidePopUp";
 import { useGSAP } from "@gsap/react";
 import gsap from "gsap";
 import ConfirmRidePopUp from "../components/ConfirmRidePopUp";
+import { useSocket } from "../context/SocketContext";
+import { CaptainDataContext } from "../context/CaptainContext";
 
 const CaptainHome = () => {
   const [ridePopUpPanel, setRidePopUpPanel] = useState(true);
@@ -15,6 +17,18 @@ const CaptainHome = () => {
 
   const [confirmRidePopUpPanel, setConfirmRidePopUpPanel] = useState(false);
   const confirmRidePopUpRef = useRef(null);
+
+  const { connected, sendEvent, onEvent } = useSocket();
+  const { captain } = useContext(CaptainDataContext);
+
+  useEffect(() => {
+    if (!captain || !connected) return;
+
+    sendEvent("join", {
+      userId: captain._id,
+      userType: "captain",
+    });
+  }, [captain, connected]);
 
   useGSAP(
     function () {

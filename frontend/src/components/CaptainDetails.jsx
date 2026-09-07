@@ -1,7 +1,10 @@
-import React from "react";
+import React, { useContext } from "react";
 import demoUser from "../assets/demo_user.jpg";
+import { CaptainDataContext } from "../context/CaptainContext";
 
 const CaptainDetails = () => {
+  const { captain } = useContext(CaptainDataContext);
+
   return (
     <div>
       <div className="mt-4 flex items-center justify-between">
@@ -11,7 +14,9 @@ const CaptainDetails = () => {
             src={demoUser}
             alt=""
           />
-          <h4 className="text-lg font-medium">Harsh Patel</h4>
+          <h4 className="text-lg captilize font-medium">
+            {captain.fullname.firstname + " " + captain.fullname.lastname}
+          </h4>
         </div>
         <div>
           <h4 className="text-xl font-semibold">₹295.20</h4>

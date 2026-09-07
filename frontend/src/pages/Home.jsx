@@ -1,4 +1,4 @@
-import React, { useRef, useState, useEffect } from "react";
+import React, { useRef, useState, useEffect, useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import map from "../assets/map_image.gif";
 import homoUberLogo from "../assets/home_Uberlogo.png";
@@ -11,6 +11,8 @@ import ConfirmRide from "../components/ConfirmRide";
 import LookingForDriver from "../components/LookingForDriver";
 import WaitingForDriver from "../components/WaitingForDriver";
 import axios from "axios";
+import { useSocket } from "../context/SocketContext";
+import { UserDataContext } from "../context/UserContext";
 
 const Home = () => {
   const [pickup, setPickup] = useState("");
@@ -37,6 +39,18 @@ const Home = () => {
   const [fareError, setFareError] = useState("");
 
   const navigate = useNavigate();
+
+  const { connected, sendEvent, onEvent } = useSocket();
+  const { user } = useContext(UserDataContext);
+
+  useEffect(() => {
+    if (!user || !connected) return;
+
+    sendEvent("join", {
+      userId: user._id,
+      userType: "user",
+    });
+  }, [user, connected]);
 
   const submitHandler = (e) => {
     e.preventDefault();
@@ -200,6 +214,7 @@ const Home = () => {
 
   useGSAP(
     function () {
+      if (!confirmRidePanelRef.current) return;
       if (confirmRidePanel) {
         gsap.to(confirmRidePanelRef.current, {
           transform: "translateY(0)",
@@ -215,6 +230,7 @@ const Home = () => {
 
   useGSAP(
     function () {
+      if (!vehicleFoundRef.current) return;
       if (vehicleFound) {
         gsap.to(vehicleFoundRef.current, {
           transform: "translateY(0)",
@@ -230,6 +246,7 @@ const Home = () => {
 
   useGSAP(
     function () {
+      if (!waitingForDriverRef.current) return;
       if (waitingForDriver) {
         gsap.to(waitingForDriverRef.current, {
           transform: "translateY(0)",
@@ -371,46 +388,52 @@ const Home = () => {
         />
       </div>
 
-      <div
-        ref={confirmRidePanelRef}
-        className="fixed w-full z-10 px-3 py-6 pt-12 translate-y-full bg-white bottom-0"
-      >
-        <ConfirmRide
-          pickup={pickup}
-          destination={destination}
-          fare={fare}
-          createRide={createRide}
-          vehicleType={selectedVehicle}
-          setConfirmRidePanel={setConfirmRidePanel}
-          setVehicleFound={setVehicleFound}
-        />
-      </div>
+      {confirmRidePanel && (
+        <div
+          ref={confirmRidePanelRef}
+          className="fixed w-full z-10 px-3 py-6 pt-12 translate-y-full bg-white bottom-0"
+        >
+          <ConfirmRide
+            pickup={pickup}
+            destination={destination}
+            fare={fare}
+            createRide={createRide}
+            vehicleType={selectedVehicle}
+            setConfirmRidePanel={setConfirmRidePanel}
+            setVehicleFound={setVehicleFound}
+          />
+        </div>
+      )}
 
-      <div
-        ref={vehicleFoundRef}
-        className="fixed w-full z-10 px-3 py-6 pt-12 translate-y-full bg-white bottom-0"
-      >
-        <LookingForDriver
-          pickup={pickup}
-          destination={destination}
-          fare={fare}
-          vehicleType={selectedVehicle}
-          setVehicleFound={setVehicleFound}
-        />
-      </div>
+      {vehicleFound && (
+        <div
+          ref={vehicleFoundRef}
+          className="fixed w-full z-10 px-3 py-6 pt-12 translate-y-full bg-white bottom-0"
+        >
+          <LookingForDriver
+            pickup={pickup}
+            destination={destination}
+            fare={fare}
+            vehicleType={selectedVehicle}
+            setVehicleFound={setVehicleFound}
+          />
+        </div>
+      )}
 
-      <div
-        ref={waitingForDriverRef}
-        className="fixed w-full z-10 px-3 py-6 pt-12 translate-y-full bg-white bottom-0"
-      >
-        <WaitingForDriver
-          pickup={pickup}
-          destination={destination}
-          fare={fare}
-          vehicleType={selectedVehicle}
-          setWaitingForDriver={setWaitingForDriver}
-        />
-      </div>
+      {waitingForDriver && (
+        <div
+          ref={waitingForDriverRef}
+          className="fixed w-full z-10 px-3 py-6 pt-12 translate-y-full bg-white bottom-0"
+        >
+          <WaitingForDriver
+            pickup={pickup}
+            destination={destination}
+            fare={fare}
+            vehicleType={selectedVehicle}
+            setWaitingForDriver={setWaitingForDriver}
+          />
+        </div>
+      )}
     </div>
   );
 };

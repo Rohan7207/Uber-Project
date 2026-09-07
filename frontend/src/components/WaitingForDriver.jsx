@@ -50,7 +50,17 @@ const WaitingForDriver = (props) => {
             </h4>
             <div>
               <h3 className="text-lg font-medium">Pickup</h3>
-              <p className="text-sm -mt-1 text-gray-600">{pickupAddress}</p>
+              <p
+                className="text-sm -mt-1 text-gray-600 break-words whitespace-normal"
+                style={{
+                  display: "-webkit-box",
+                  WebkitLineClamp: 3,
+                  WebkitBoxOrient: "vertical",
+                  overflow: "hidden",
+                }}
+              >
+                {pickupAddress}
+              </p>
             </div>
           </div>
 
@@ -60,7 +70,9 @@ const WaitingForDriver = (props) => {
               <i className="ri-bank-card-fill"></i>
             </h4>
             <div>
-              <h3 className="text-lg font-medium">{formatPrice(selectedFare)}</h3>
+              <h3 className="text-lg font-medium">
+                {formatPrice(selectedFare)}
+              </h3>
               <p className="text-sm -mt-1 text-gray-600">Cash</p>
             </div>
           </div>

@@ -174,12 +174,6 @@ module.exports.getAddressCoordinate = async (address) => {
 
     const selectedMatch = pickBestGeocodeResult(response.data, address);
 
-    console.log("[Geo] Address:", address);
-    console.log("[Geo] Display Name:", selectedMatch.displayName);
-    console.log("[Geo] Type:", selectedMatch.type);
-    console.log("[Geo] Latitude:", selectedMatch.lat);
-    console.log("[Geo] Longitude:", selectedMatch.lng);
-
     const coordinates = {
       lat: selectedMatch.lat,
       lng: selectedMatch.lng,
@@ -243,11 +237,6 @@ module.exports.getDistanceTime = async (startLat, startLng, endLat, endLng) => {
   try {
     const url = `https://us1.locationiq.com/v1/directions/driving/${startLng},${startLat};${endLng},${endLat}`;
 
-    console.log("[Routing] Requesting route between coordinates:", {
-      start: { lat: startLat, lng: startLng },
-      end: { lat: endLat, lng: endLng },
-    });
-
     const response = await axios.get(url, {
       params: {
         key: process.env.LOCATIONIQ_API_KEY,
@@ -264,9 +253,6 @@ module.exports.getDistanceTime = async (startLat, startLng, endLat, endLng) => {
 
       const distanceKm = Number((primaryRoute.distance / 1000).toFixed(2));
       const durationMinutes = Number((primaryRoute.duration / 60).toFixed(2));
-
-      console.log("[Routing] Distance:", distanceKm, "km");
-      console.log("[Routing] Duration:", durationMinutes, "minutes");
 
       return {
         distance: distanceKm,

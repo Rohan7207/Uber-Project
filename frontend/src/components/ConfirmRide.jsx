@@ -43,7 +43,9 @@ const ConfirmRide = (props) => {
             </h4>
             <div>
               <h3 className="text-lg font-medium">Pickup</h3>
-              <p className="text-sm -mt-1 text-gray-600">{pickupAddress}</p>
+              <p className="text-sm -mt-1 text-gray-600 break-words break-all whitespace-normal max-h-20 overflow-auto">
+                {pickupAddress}
+              </p>
             </div>
           </div>
 
@@ -54,7 +56,7 @@ const ConfirmRide = (props) => {
             </h4>
             <div>
               <h3 className="text-lg font-medium">Destination</h3>
-              <p className="text-sm -mt-1 text-gray-600">
+              <p className="text-sm -mt-1 text-gray-600 break-words break-all whitespace-normal max-h-20 overflow-auto">
                 {destinationAddress}
               </p>
             </div>
