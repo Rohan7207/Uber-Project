@@ -1,4 +1,5 @@
 const axios = require("axios");
+const captainModel = require("../models/captain.model");
 
 // In-memory cache for normalized address -> coordinates.
 // This resets automatically when the Node.js server restarts.
@@ -339,4 +340,49 @@ module.exports.getAutoCompleteSuggestions = async (input) => {
 
     throw new Error("Unable to fetch autocomplete suggestions");
   }
+};
+
+module.exports.getCaptainInTheRadius = async (ltd, lng, radius) => {
+  const latitude = Number(ltd);
+  const longitude = Number(lng);
+  const radiusInKm = Number(radius);
+
+  if (!Number.isFinite(latitude) || !Number.isFinite(longitude)) {
+    throw new Error("Captain latitude and longitude are required");
+  }
+
+  if (!Number.isFinite(radiusInKm) || radiusInKm <= 0) {
+    throw new Error("Radius must be a positive number in kilometers");
+  }
+
+  if (latitude < -90 || latitude > 90 || longitude < -180 || longitude > 180) {
+    throw new Error("Captain coordinates are out of valid range");
+  }
+
+  const radiusInRadians = radiusInKm / 6371;
+  const latitudeRange = radiusInKm / 111.32;
+
+  const captains = await captainModel.find({
+    $or: [
+      {
+        "location.coordinates": {
+          $geoWithin: {
+            $centerSphere: [[longitude, latitude], radiusInRadians],
+          },
+        },
+      },
+      {
+        "location.ltd": {
+          $gte: latitude - latitudeRange,
+          $lte: latitude + latitudeRange,
+        },
+        "location.lng": {
+          $gte: longitude - latitudeRange,
+          $lte: longitude + latitudeRange,
+        },
+      },
+    ],
+  });
+
+  return captains;
 };

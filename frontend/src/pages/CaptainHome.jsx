@@ -28,7 +28,41 @@ const CaptainHome = () => {
       userId: captain._id,
       userType: "captain",
     });
-  }, [captain, connected]);
+
+    if (!navigator.geolocation) {
+      console.warn("Geolocation is not supported on this browser.");
+      return undefined;
+    }
+
+    const updateCaptainLocation = () => {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const { latitude, longitude } = position.coords;
+
+          sendEvent("update-location-captain", {
+            userId: captain._id,
+            location: {
+              ltd: latitude,
+              lng: longitude,
+            },
+          });
+        },
+        (error) => {
+          console.warn("Unable to fetch captain location:", error.message);
+        },
+        {
+          enableHighAccuracy: true,
+          timeout: 10000,
+          maximumAge: 0,
+        },
+      );
+    };
+
+    updateCaptainLocation();
+    const locationInterval = setInterval(updateCaptainLocation, 10000);
+
+    return () => clearInterval(locationInterval);
+  }, [captain, connected, sendEvent]);
 
   useGSAP(
     function () {
