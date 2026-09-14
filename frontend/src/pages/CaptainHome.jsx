@@ -14,12 +14,26 @@ import { CaptainDataContext } from "../context/CaptainContext";
 const CaptainHome = () => {
   const [ridePopUpPanel, setRidePopUpPanel] = useState(true);
   const ridePopUpRef = useRef(null);
+  const [newRideRequest, setNewRideRequest] = useState(null);
 
   const [confirmRidePopUpPanel, setConfirmRidePopUpPanel] = useState(false);
   const confirmRidePopUpRef = useRef(null);
 
   const { connected, sendEvent, onEvent } = useSocket();
   const { captain } = useContext(CaptainDataContext);
+
+  useEffect(() => {
+    if (!connected) return;
+
+    const cleanup = onEvent("new-ride-request", (data) => {
+      const ride = data?.ride ?? data;
+      console.log("New ride request:", ride);
+      setNewRideRequest(ride);
+      setRidePopUpPanel(true);
+    });
+
+    return cleanup;
+  }, [connected, onEvent]);
 
   useEffect(() => {
     if (!captain || !connected) return;
@@ -52,8 +66,8 @@ const CaptainHome = () => {
         },
         {
           enableHighAccuracy: true,
-          timeout: 10000,
-          maximumAge: 0,
+          timeout: 20000,
+          maximumAge: 5000,
         },
       );
     };
@@ -109,6 +123,21 @@ const CaptainHome = () => {
       <div className="h-3/5">
         <img className="h-full w-full object-cover" src={map2} alt="Map" />
       </div>
+
+      {newRideRequest && (
+        <div className="absolute left-4 right-4 top-20 z-20 rounded-2xl bg-white p-4 shadow-lg">
+          <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">
+            New ride request
+          </p>
+          <h3 className="mt-2 text-lg font-bold text-gray-900">
+            {newRideRequest.pickup}
+          </h3>
+          <p className="text-sm text-gray-600">To: {newRideRequest.destination}</p>
+          <p className="mt-2 text-sm font-medium text-green-600">
+            Fare: ₹{newRideRequest.fare}
+          </p>
+        </div>
+      )}
 
       <div className="h-2/5 p-6">
         <CaptainDetails />

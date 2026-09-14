@@ -158,10 +158,10 @@ function initializeSocket(server) {
 }
 
 // Send a message/event to a specific connected client using their socket ID
-function sendMessageToSocketId(socketId, message) {
+function sendMessageToSocketId(socketId, message, eventName = "message") {
   if (io) {
-    // Target the specific socket and emit the message event
-    io.to(socketId).emit("message", message);
+    // Target the specific socket and emit the provided event name
+    io.to(socketId).emit(eventName, message);
   } else {
     // Socket.IO must be initialized before sending messages
     console.log("Socket.io not initialized");

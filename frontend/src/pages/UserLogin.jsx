@@ -37,9 +37,7 @@ const UserLogin = () => {
         navigate("/home");
       }
     } catch (error) {
-      const message = error.response?.data?.errors?.[0]?.msg;
-
-      console.log(message);
+      console.error(error);
     }
   };
 
