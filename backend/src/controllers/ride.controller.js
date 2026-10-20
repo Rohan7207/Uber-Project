@@ -1,6 +1,7 @@
 const rideService = require("../services/ride.service");
 const mapServices = require("../services/maps.service");
 const { sendMessageToSocketId } = require("../../socket");
+const rideModel = require("../models/ride.model");
 
 async function createRide(req, res) {
   const { pickup, destination, vehicleType, fare, quoteId } = req.body;
@@ -27,18 +28,30 @@ async function createRide(req, res) {
       ...(createdRide?.otp ? { otp: createdRide.otp } : {}),
     };
 
+    ride.otp = "";
+
     try {
       const pickupCoordinates = await mapServices.getAddressCoordinate(pickup);
       const ltd = Number(pickupCoordinates?.lat);
       const lng = Number(pickupCoordinates?.lng);
-      const nearbyRadiusKm = 5;
+      const nearbyRadiusKm = 10;
 
       if (Number.isFinite(ltd) && Number.isFinite(lng)) {
+        console.log("Pickup coordinates:", {
+          ltd,
+          lng,
+          radius: nearbyRadiusKm,
+        });
+
         const nearbyCaptains = await mapServices.getCaptainInTheRadius(
           ltd,
           lng,
           nearbyRadiusKm,
         );
+
+        console.log("[Debug] Pickup:", { ltd, lng });
+        console.log("[Debug] Nearby captains returned:", nearbyCaptains);
+        console.log("[Debug] Nearby captains count:", nearbyCaptains?.length);
 
         const eligibleCaptains = (
           Array.isArray(nearbyCaptains) ? nearbyCaptains : []
@@ -47,6 +60,18 @@ async function createRide(req, res) {
           if (captain.status && captain.status !== "active") return false;
           return true;
         });
+
+        console.log(
+          "[Debug] Captains before filtering:",
+          (Array.isArray(nearbyCaptains) ? nearbyCaptains : []).map(
+            (captain) => ({
+              id: captain?._id?.toString(),
+              socketId: captain?.socketId,
+              status: captain?.status,
+              location: captain?.location,
+            }),
+          ),
+        );
 
         const uniqueCaptains = [];
         const seenCaptainIds = new Set();
@@ -58,13 +83,34 @@ async function createRide(req, res) {
           uniqueCaptains.push(captain);
         });
 
+        const rideWithUser = await rideModel
+          .findById(rideRecord._id)
+          .populate("user", "fullname email");
+
+        if (!rideWithUser) {
+          throw new Error("Created ride not found");
+        }
+
+        console.log("Populated ride user:", rideWithUser?.user);
+        console.log("Populated ride object:", rideWithUser?.toObject());
+
+        const captainRidePayload = {
+          ...rideWithUser.toObject(),
+          vehicleType,
+          ...(quoteId ? { quoteId } : {}),
+        };
+
         uniqueCaptains.forEach((captain) => {
+          // console.log(captain, ride);
+
           sendMessageToSocketId(
             captain.socketId,
-            { ride: ridePayload },
+            { ride: captainRidePayload },
             "new-ride-request",
           );
         });
+
+        console.log("Nearby captains notified:", uniqueCaptains.length);
       }
     } catch (geoError) {
       console.warn(
@@ -99,4 +145,23 @@ async function getFare(req, res) {
   }
 }
 
-module.exports = { createRide, getFare };
+async function confirmRide(req, res) {
+  const { rideId } = req.body;
+
+  try {
+    const ride = await rideService.confirmRide(rideId, req.captain);
+
+    console.log("Sending ride-confirmed to:", ride.user?.socketId);
+    console.log("Confirmed ride:", ride.toObject());
+
+    // Ride is confirmed we need to tell user that ride is accepted by captain
+    sendMessageToSocketId(ride.user.socketId, ride, "ride-confirmed");
+
+    return res.status(200).json(ride);
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ message: err.message });
+  }
+}
+
+module.exports = { createRide, getFare, confirmRide };

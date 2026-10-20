@@ -18,4 +18,11 @@ router.get(
   rideController.getFare,
 );
 
+router.post(
+  "/confirm",
+  authMiddleware.authCaptain,
+  rideValidator.confirmRideValidator,
+  rideController.confirmRide,
+);
+
 module.exports = router;

@@ -4,6 +4,7 @@ import React, {
   useEffect,
   useRef,
   useState,
+  useCallback,
 } from "react";
 import { io } from "socket.io-client";
 
@@ -51,6 +52,7 @@ export const SocketProvider = ({ children }) => {
     const handleConnect = () => {
       setConnected(true);
       // eslint-disable-next-line no-console
+
       console.debug("Socket connected:", socket.id);
     };
 
@@ -87,25 +89,24 @@ export const SocketProvider = ({ children }) => {
    * Emit a message to the server on a specific event name.
    * If the socket is not ready, this warns and no-op's.
    */
-  const sendEvent = (eventName, payload = {}) => {
+  const sendEvent = useCallback((eventName, payload = {}) => {
     const socket = socketRef.current;
+
     if (!socket) {
-      // eslint-disable-next-line no-console
-      console.warn("Socket not initialized yet. Event not sent:", eventName);
+      console.warn("Socket not initialized:", eventName);
       return;
     }
 
-    console.log(`Sending message: ${payload} to ${eventName}`);
-
     socket.emit(eventName, payload);
-  };
+  }, []);
 
   /**
    * Subscribe to an event coming from the server.
    * Returns an unsubscribe function which removes the specific handler.
    */
-  const onEvent = (eventName, handler) => {
+  const onEvent = useCallback((eventName, handler) => {
     const socket = socketRef.current;
+
     if (!socket) {
       // eslint-disable-next-line no-console
       console.warn(
@@ -121,7 +122,7 @@ export const SocketProvider = ({ children }) => {
     return () => {
       if (socketRef.current) socketRef.current.off(eventName, handler);
     };
-  };
+  }, []);
 
   const value = {
     socket: socketRef.current,

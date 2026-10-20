@@ -1,4 +1,5 @@
 import React, { useContext, useEffect, useRef, useState } from "react";
+import axios from "axios";
 import { Link } from "react-router-dom";
 import map2 from "../assets/map2.gif";
 import carImage from "../assets/car_png.jpg";
@@ -12,9 +13,11 @@ import { useSocket } from "../context/SocketContext";
 import { CaptainDataContext } from "../context/CaptainContext";
 
 const CaptainHome = () => {
-  const [ridePopUpPanel, setRidePopUpPanel] = useState(true);
+  const [ridePopUpPanel, setRidePopUpPanel] = useState(false);
   const ridePopUpRef = useRef(null);
-  const [newRideRequest, setNewRideRequest] = useState(null);
+  // const [newRideRequest, setNewRideRequest] = useState(null);
+
+  const [ride, setRide] = useState(null);
 
   const [confirmRidePopUpPanel, setConfirmRidePopUpPanel] = useState(false);
   const confirmRidePopUpRef = useRef(null);
@@ -26,9 +29,12 @@ const CaptainHome = () => {
     if (!connected) return;
 
     const cleanup = onEvent("new-ride-request", (data) => {
-      const ride = data?.ride ?? data;
-      console.log("New ride request:", ride);
-      setNewRideRequest(ride);
+      const incomingRide = data?.ride ?? data;
+
+      console.log("New ride request:", incomingRide);
+      console.log("Ride user:", incomingRide?.user);
+
+      setRide(incomingRide);
       setRidePopUpPanel(true);
     });
 
@@ -78,6 +84,23 @@ const CaptainHome = () => {
     return () => clearInterval(locationInterval);
   }, [captain, connected, sendEvent]);
 
+  async function confirmRide() {
+    const response = await axios.post(
+      `${import.meta.env.VITE_BASE_URL}/rides/confirm`,
+      {
+        rideId: ride._id,
+        captainId: captain._id,
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      },
+    );
+
+    return response;
+  }
+
   useGSAP(
     function () {
       if (ridePopUpPanel) {
@@ -124,7 +147,7 @@ const CaptainHome = () => {
         <img className="h-full w-full object-cover" src={map2} alt="Map" />
       </div>
 
-      {newRideRequest && (
+      {/* {newRideRequest && (
         <div className="absolute left-4 right-4 top-20 z-20 rounded-2xl bg-white p-4 shadow-lg">
           <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">
             New ride request
@@ -132,12 +155,14 @@ const CaptainHome = () => {
           <h3 className="mt-2 text-lg font-bold text-gray-900">
             {newRideRequest.pickup}
           </h3>
-          <p className="text-sm text-gray-600">To: {newRideRequest.destination}</p>
+          <p className="text-sm text-gray-600">
+            To: {newRideRequest.destination}
+          </p>
           <p className="mt-2 text-sm font-medium text-green-600">
             Fare: ₹{newRideRequest.fare}
           </p>
         </div>
-      )}
+      )} */}
 
       <div className="h-2/5 p-6">
         <CaptainDetails />
@@ -148,8 +173,10 @@ const CaptainHome = () => {
         className="fixed w-full translate-y-full z-10 px-3 py-6 pt-12  bg-white bottom-0"
       >
         <RidePopUp
+          ride={ride}
           setRidePopUpPanel={setRidePopUpPanel}
           setConfirmRidePopUpPanel={setConfirmRidePopUpPanel}
+          confirmRide={confirmRide}
         />
       </div>
 
@@ -158,6 +185,7 @@ const CaptainHome = () => {
         className="fixed w-full h-screen translate-y-full z-10 px-3 py-6 pt-12  bg-white bottom-0"
       >
         <ConfirmRidePopUp
+          ride={ride}
           setConfirmRidePopUpPanel={setConfirmRidePopUpPanel}
           setRidePopUpPanel={setRidePopUpPanel}
         />

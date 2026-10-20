@@ -37,6 +37,7 @@ const UserSignup = () => {
       setLastName("");
 
       const data = response.data;
+      console.log("[UserSignup] Registered user:", data.user);
       setUser(data.user);
       localStorage.setItem("token", data.token);
 

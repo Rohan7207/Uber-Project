@@ -218,6 +218,13 @@ module.exports.getDistanceTime = async (startLat, startLng, endLat, endLng) => {
     throw invalidCoordinatesError;
   }
 
+  console.log("[Routing] Request:", {
+    startLat,
+    startLng,
+    endLat,
+    endLng,
+  });
+
   if (
     startLat < -90 ||
     startLat > 90 ||
@@ -304,6 +311,8 @@ module.exports.getAutoCompleteSuggestions = async (input) => {
   if (!input || typeof input !== "string" || !input.trim()) {
     throw new Error("Query is required");
   }
+
+  console.log("[LocationIQ] Autocomplete request:", input);
 
   try {
     const url = "https://us1.locationiq.com/v1/autocomplete.php";

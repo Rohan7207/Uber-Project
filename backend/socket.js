@@ -16,20 +16,9 @@ function initializeSocket(server) {
 
   // Listen for new client connections
   io.on("connection", (socket) => {
-    // Each connected client gets a unique socket ID
-    // console.log(`Client connection: ${socket.id}`);
-
-    // socket.onAny((eventName, ...args) => {
-    //   console.log("🔥 EVENT RECEIVED:", eventName);
-    //   console.log("🔥 DATA:", args);
-    // });
-
     // Listen for a client joining the Socket.IO connection
-    socket.on("join", async (data) => {
-      // console.log("🔥 JOIN EVENT RECEIVED");
-      // console.log("DATA:", data);
-      // console.log("DATA TYPE:", typeof data);
 
+    socket.on("join", async (data) => {
       // Convert JSON string to object if necessary
       if (typeof data === "string") {
         try {
@@ -52,15 +41,12 @@ function initializeSocket(server) {
         return;
       }
 
-      // console.log("USER ID:", userId);
-      // console.log("USER TYPE:", userType);
-
       try {
         if (userType === "user") {
           const user = await userModel.findByIdAndUpdate(
             userId,
             { socketId: socket.id },
-            { new: true },
+            { returnDocument: "after" },
           );
 
           if (!user) {
@@ -68,12 +54,18 @@ function initializeSocket(server) {
             return;
           }
 
+          console.log("[Socket] User registered:", {
+            userId: user._id.toString(),
+            savedSocketId: user.socketId,
+            currentSocketId: socket.id,
+          });
+
           console.log("User socket ID updated");
         } else if (userType === "captain") {
           const captain = await captainModel.findByIdAndUpdate(
             userId,
             { socketId: socket.id },
-            { new: true },
+            { returnDocument: "after" },
           );
 
           if (!captain) {

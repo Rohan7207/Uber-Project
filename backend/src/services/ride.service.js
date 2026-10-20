@@ -2,6 +2,7 @@ const crypto = require("crypto");
 const rideModel = require("../models/ride.model");
 const mapService = require("./maps.service");
 const { generateOtp } = require("../utils/otp.util");
+const captainModel = require("../models/captain.model");
 
 const VEHICLE_RATES = {
   auto: { base: 30, perKm: 10, perMin: 1, minFare: 40 },
@@ -63,6 +64,8 @@ async function getFare(pickup, destination, vehicleType) {
     mapService.getAddressCoordinate(pickup),
     mapService.getAddressCoordinate(destination),
   ]);
+
+  await new Promise((resolve) => setTimeout(resolve, 1000));
 
   const distanceTime = await mapService.getDistanceTime(
     originCoordinates.lat,
@@ -223,8 +226,38 @@ async function createRide(
   return { ride, otp };
 }
 
+async function confirmRide(rideId, captain) {
+  if (!rideId) {
+    throw new Error("Ride id is required");
+  }
+
+  const ride = await rideModel
+    .findOneAndUpdate(
+      { _id: rideId },
+      {
+        status: "accepted",
+        captain: captain._id,
+      },
+      { returnDocument: "after" },
+    )
+    .populate("user");
+
+  if (!ride) {
+    throw new Error("Ride not found");
+  }
+
+  // Populate using the imported model explicitly.
+  await ride.populate({
+    path: "captain",
+    model: captainModel,
+  });
+
+  return ride;
+}
+
 module.exports = {
   getFare,
   createFareQuote,
   createRide,
+  confirmRide,
 };

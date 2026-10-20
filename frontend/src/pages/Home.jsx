@@ -37,6 +37,7 @@ const Home = () => {
   const [selectedVehicle, setSelectedVehicle] = useState("car");
   const [fareLoading, setFareLoading] = useState(false);
   const [fareError, setFareError] = useState("");
+  const [confirmedRide, setConfirmedRide] = useState(null);
 
   const navigate = useNavigate();
 
@@ -44,13 +45,38 @@ const Home = () => {
   const { user } = useContext(UserDataContext);
 
   useEffect(() => {
-    if (!user || !connected) return;
+    if (!user?._id || !connected) {
+      console.log("[User] Join skipped:", {
+        hasUser: !!user?._id,
+        connected,
+      });
+      return;
+    }
 
     sendEvent("join", {
       userId: user._id,
       userType: "user",
     });
-  }, [user, connected]);
+  }, [user?._id, connected, sendEvent]);
+
+  useEffect(() => {
+    if (!connected) return;
+
+    const unsubscribe = onEvent("ride-confirmed", (ride) => {
+      console.log("[User] Received ride-confirmed:", ride);
+
+      setConfirmedRide(ride);
+      setVehicleFound(false);
+      setWaitingForDriver(true);
+
+      // Close the previous panels
+      setVehiclePanelOpen(false);
+      setConfirmRidePanel(false);
+      setPanelOpen(false);
+    });
+
+    return unsubscribe;
+  }, [connected, onEvent]);
 
   const submitHandler = (e) => {
     e.preventDefault();
@@ -430,6 +456,7 @@ const Home = () => {
             destination={destination}
             fare={fare}
             vehicleType={selectedVehicle}
+            ride={confirmedRide}
             setWaitingForDriver={setWaitingForDriver}
           />
         </div>

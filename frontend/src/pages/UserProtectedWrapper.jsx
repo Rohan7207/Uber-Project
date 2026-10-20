@@ -13,26 +13,46 @@ const UserProtectedWrapper = ({ children }) => {
   useEffect(() => {
     if (!token) {
       navigate("/login");
+      return;
     }
 
-    axios
-      .get(`${import.meta.env.VITE_BASE_URL}/users/profile`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      })
-      .then((response) => {
-        if (response.status === 200) {
-          setUser(response.data.user);
+    let cancelled = false;
+
+    const fetchProfile = async () => {
+      try {
+        const response = await axios.get(
+          `${import.meta.env.VITE_BASE_URL}/users/profile`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          },
+        );
+
+        if (!cancelled && response.status === 200) {
+          setUser(response.data);
           setIsLoading(false);
         }
-      })
-      .catch((err) => {
-        console.log(err);
+      } catch (err) {
+        if (cancelled) return;
+
+        console.error(
+          "[UserProtectedWrapper] Profile request failed:",
+          err.response?.status,
+          err.response?.data,
+        );
+
         localStorage.removeItem("token");
         navigate("/login");
-      });
-  }, [token]);
+      }
+    };
+
+    fetchProfile();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [token, navigate, setUser]);
 
   if (isLoading) {
     return <div>Loading...</div>;

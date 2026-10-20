@@ -43,3 +43,8 @@ module.exports.fareValidator = [
 
   validateRequest,
 ];
+
+module.exports.confirmRideValidator = [
+  body("rideId").isMongoId().withMessage("Invalid ride id"),
+  validateRequest,
+];

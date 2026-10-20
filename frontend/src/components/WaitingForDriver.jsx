@@ -11,6 +11,13 @@ const WaitingForDriver = (props) => {
     auto: autoImage,
   };
 
+  const captain = props.ride?.captain || {};
+  const captainName = captain.fullname
+    ? `${captain.fullname.firstname || ""} ${captain.fullname.lastname || ""}`.trim()
+    : "Captain details unavailable";
+
+  const vehicle = captain.vehicle || {};
+
   const selectedImage = imageMap[props.vehicleType] || carImage;
   const selectedFare =
     props.fare?.fares?.[props.vehicleType]?.estimatedFare ??
@@ -34,46 +41,52 @@ const WaitingForDriver = (props) => {
 
       <div className="flex items-center justify-between">
         <img className="h-[5rem]" src={selectedImage} alt="Ride vehicle" />
-        <div className="text-right">
-          <h2 className="text-lg font-medium">Karan</h2>
-          <h4 className="text-xl font-semibold -mt-1 -mb-1">KA 15 AK 0001</h4>
-          <p className="text-sm text-gray-600">White Suzuki S-Presso LXI</p>
+        <div className="text-right p-1">
+          <h2 className="text-lg font-medium mb-1">{captainName}</h2>
+          <h4 className="text-xl font-semibold -mt-1 -mb-1">
+            {vehicle.plate || "Vehicle number unavailable"}
+          </h4>
+          <p className="text-sm text-gray-600">
+            {[vehicle.color, vehicle.vehicleType].filter(Boolean).join(" ") ||
+              "Vehicle details unavailable"}
+          </p>
         </div>
       </div>
 
       <div className="flex gap-2 flex-col justify-between items-center">
         <div className="w-full mt-3">
-          <div className="flex items-center gap-5 p-2 border-b-2">
-            <h4>
-              {" "}
-              <i className="text-lg ri-map-pin-2-fill"></i>
-            </h4>
-            <div>
+          {/* Pickup */}
+          <div className="flex items-start gap-3 p-3 border-b-2">
+            <i className="text-lg ri-map-pin-2-fill mt-1" />
+            <div className="flex-1 min-w-0">
               <h3 className="text-lg font-medium">Pickup</h3>
-              <p
-                className="text-sm -mt-1 text-gray-600 break-words whitespace-normal"
-                style={{
-                  display: "-webkit-box",
-                  WebkitLineClamp: 3,
-                  WebkitBoxOrient: "vertical",
-                  overflow: "hidden",
-                }}
-              >
+              <p className="text-sm text-gray-600 break-words">
                 {pickupAddress}
               </p>
             </div>
           </div>
 
-          <div className="flex items-center gap-5 p-2">
-            <h4>
-              {" "}
-              <i className="ri-bank-card-fill"></i>
-            </h4>
+          {/* Destination */}
+          <div className="flex items-start gap-3 p-3 border-b-2">
+            <i className="text-lg ri-map-pin-user-fill mt-1" />
+            <div className="flex-1 min-w-0">
+              <h3 className="text-lg font-medium">Destination</h3>
+              <p className="text-sm text-gray-600 break-words">
+                {destinationAddress}
+              </p>
+            </div>
+          </div>
+
+          {/* Fare */}
+          <div className="flex items-center gap-3 p-3">
+            <i className="text-lg ri-bank-card-fill" />
             <div>
               <h3 className="text-lg font-medium">
-                {formatPrice(selectedFare)}
+                {formatPrice(props.ride?.fare ?? selectedFare)}
               </h3>
-              <p className="text-sm -mt-1 text-gray-600">Cash</p>
+              <p className="text-sm text-gray-600">
+                {props.ride?.paymentMethod || "Cash"}
+              </p>
             </div>
           </div>
         </div>
