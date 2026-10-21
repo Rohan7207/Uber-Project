@@ -27,6 +27,7 @@ const WaitingForDriver = (props) => {
   const destinationAddress = formatAddress(
     props.destination || "Destination location",
   );
+  const rideOtp = props.ride?.otp;
 
   return (
     <div>
@@ -42,7 +43,7 @@ const WaitingForDriver = (props) => {
       <div className="flex items-center justify-between">
         <img className="h-[5rem]" src={selectedImage} alt="Ride vehicle" />
         <div className="text-right p-1">
-          <h2 className="text-lg font-medium mb-1">{captainName}</h2>
+          <h2 className="text-lg font-medium mb-1 capitalize">{captainName}</h2>
           <h4 className="text-xl font-semibold -mt-1 -mb-1">
             {vehicle.plate || "Vehicle number unavailable"}
           </h4>
@@ -89,6 +90,36 @@ const WaitingForDriver = (props) => {
               </p>
             </div>
           </div>
+
+          {/* otp */}
+          {rideOtp && (
+            <div className="w-full mt-3 rounded-xl border border-green-200 bg-green-50 p-3">
+              <div className="flex items-center gap-2">
+                <i className="ri-shield-check-line text-2xl text-green-700" />
+                <h3 className="text-lg font-semibold text-gray-900">
+                  Your Ride OTP
+                </h3>
+              </div>
+
+              <p className="mt-1 text-sm text-gray-600">
+                Share this code with your captain when they arrive to verify
+                your ride.
+              </p>
+
+              <div className="mt-2 flex justify-center gap-2">
+                {String(rideOtp)
+                  .split("")
+                  .map((digit, index) => (
+                    <div
+                      key={index}
+                      className="flex h-11 w-10 items-center justify-center rounded-lg border border-green-200 bg-white text-xl font-bold text-green-800"
+                    >
+                      {digit}
+                    </div>
+                  ))}
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>

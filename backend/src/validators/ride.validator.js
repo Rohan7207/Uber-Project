@@ -48,3 +48,13 @@ module.exports.confirmRideValidator = [
   body("rideId").isMongoId().withMessage("Invalid ride id"),
   validateRequest,
 ];
+
+module.exports.startRideValidator = [
+  query("rideId").isMongoId().withMessage("Invalid ride id"),
+  query("otp")
+    .isString()
+    .isLength({ min: 6, max: 6 })
+    .withMessage("Invalid otp"),
+
+  validateRequest,
+];

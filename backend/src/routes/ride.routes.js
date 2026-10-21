@@ -25,4 +25,18 @@ router.post(
   rideController.confirmRide,
 );
 
+router.get(
+  "/start-ride",
+  authMiddleware.authCaptain,
+  rideValidator.startRideValidator,
+  rideController.startRide,
+);
+
+router.post(
+  "/end-ride",
+  authMiddleware.authCaptain,
+  rideValidator.confirmRideValidator,
+  rideController.endRide,
+);
+
 module.exports = router;

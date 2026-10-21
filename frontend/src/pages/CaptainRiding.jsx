@@ -1,7 +1,7 @@
 import React, { useRef, useState } from "react";
 import homeUberLogo from "../assets/home_Uberlogo.png";
 import map2 from "../assets/map2.gif";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import FinishRide from "../components/FinishRide";
 import { useGSAP } from "@gsap/react";
 import gsap from "gsap";
@@ -9,6 +9,11 @@ import gsap from "gsap";
 const CaptainRiding = () => {
   const [finishRidePanel, setFinishRidePanel] = useState(false);
   const finishRidePanelRef = useRef(null);
+  const location = useLocation();
+  const rideData = location.state?.ride;
+
+  console.log("CaptainRiding navigation state:", location.state);
+  console.log("CaptainRiding rideData:", rideData);
 
   useGSAP(
     function () {
@@ -65,7 +70,7 @@ const CaptainRiding = () => {
         ref={finishRidePanelRef}
         className="fixed w-full z-10 px-3 py-6 pt-12 translate-y-full bg-white bottom-0"
       >
-        <FinishRide setFinishRidePanel={setFinishRidePanel} />
+        <FinishRide ride={rideData} setFinishRidePanel={setFinishRidePanel} />
       </div>
     </div>
   );

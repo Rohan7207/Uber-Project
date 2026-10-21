@@ -1,7 +1,6 @@
 import React, { useContext, useEffect, useRef, useState } from "react";
 import axios from "axios";
 import { Link } from "react-router-dom";
-import map2 from "../assets/map2.gif";
 import carImage from "../assets/car_png.jpg";
 import homeUberLogo from "../assets/home_Uberlogo.png";
 import CaptainDetails from "../components/CaptainDetails";
@@ -11,6 +10,7 @@ import gsap from "gsap";
 import ConfirmRidePopUp from "../components/ConfirmRidePopUp";
 import { useSocket } from "../context/SocketContext";
 import { CaptainDataContext } from "../context/CaptainContext";
+import LiveTracking from "../components/LiveTracking";
 
 const CaptainHome = () => {
   const [ridePopUpPanel, setRidePopUpPanel] = useState(false);
@@ -144,7 +144,7 @@ const CaptainHome = () => {
       </div>
 
       <div className="h-3/5">
-        <img className="h-full w-full object-cover" src={map2} alt="Map" />
+        <LiveTracking />
       </div>
 
       {/* {newRideRequest && (

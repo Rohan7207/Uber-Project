@@ -3,6 +3,7 @@ const rideModel = require("../models/ride.model");
 const mapService = require("./maps.service");
 const { generateOtp } = require("../utils/otp.util");
 const captainModel = require("../models/captain.model");
+const { sendMessageToSocketId } = require("../../socket");
 
 const VEHICLE_RATES = {
   auto: { base: 30, perKm: 10, perMin: 1, minFare: 40 },
@@ -183,6 +184,7 @@ async function createRide(
   }
 
   let normalizedFare = normalizeFareAmount(fare);
+  let rideDistance = null;
 
   if (quoteId) {
     const validQuote = getValidQuote(quoteId, user);
@@ -190,6 +192,7 @@ async function createRide(
       throw new Error("Ride quote is invalid or expired.");
     }
 
+    rideDistance = validQuote.distance ?? null;
     const selectedFare = validQuote.fares?.[vehicleType]?.estimatedFare;
     if (!isAllowedVehicleType(vehicleType) || !selectedFare) {
       throw new Error(
@@ -197,7 +200,7 @@ async function createRide(
       );
     }
 
-    normalizedFare = Number(selectedFare);
+    rideDistance = validQuote.distance;
   } else if (normalizedFare && isAllowedVehicleType(vehicleType)) {
     const minimumFare = VEHICLE_RATES[vehicleType].minFare || 0;
     if (normalizedFare < minimumFare) {
@@ -214,14 +217,17 @@ async function createRide(
     throw new Error("Unable to determine a valid fare for this ride.");
   }
 
+  // Generate OTP before creating the ride
+  const otp = generateOtp(otpDigits);
+
   const ride = await rideModel.create({
     user,
     pickup,
     destination,
     fare: normalizedFare,
+    distance: rideDistance,
+    otp,
   });
-
-  const otp = generateOtp(otpDigits);
 
   return { ride, otp };
 }
@@ -240,6 +246,7 @@ async function confirmRide(rideId, captain) {
       },
       { returnDocument: "after" },
     )
+    .select("+otp")
     .populate("user");
 
   if (!ride) {
@@ -255,9 +262,77 @@ async function confirmRide(rideId, captain) {
   return ride;
 }
 
+async function startRide(rideId, otp, captain) {
+  if (!rideId || !otp) {
+    throw new Error("Ride id and OTP are required");
+  }
+
+  const ride = await rideModel
+    .findOne({
+      _id: rideId,
+      captain: captain._id,
+    })
+    .select("+otp")
+    .populate("user")
+    .populate("captain");
+
+  if (!ride) {
+    throw new Error("Ride not found");
+  }
+
+  if (ride.status !== "accepted") {
+    throw new Error("Ride not accepted");
+  }
+
+  if (String(ride.otp) !== String(otp)) {
+    throw new Error("Invalid OTP");
+  }
+
+  ride.status = "ongoing";
+  await ride.save();
+
+  return ride;
+}
+
+async function endRide(rideId, captain) {
+  if (!rideId) {
+    throw new Error("Ride id is required");
+  }
+
+  const ride = await rideModel
+    .findOne({
+      _id: rideId,
+      captain: captain._id,
+    })
+    .select("+otp")
+    .populate("user")
+    .populate("captain");
+
+  if (!ride) {
+    throw new Error("Ride not found");
+  }
+
+  if (ride.status !== "ongoing") {
+    throw new Error("Ride not ongoing");
+  }
+
+  await rideModel.findOneAndUpdate(
+    {
+      _id: rideId,
+    },
+    {
+      status: "completed",
+    },
+  );
+
+  return ride;
+}
+
 module.exports = {
   getFare,
   createFareQuote,
   createRide,
   confirmRide,
+  startRide,
+  endRide,
 };

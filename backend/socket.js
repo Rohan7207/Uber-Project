@@ -118,7 +118,7 @@ function initializeSocket(server) {
               lng: longitude,
             },
           },
-          { new: true },
+          { returnDocument: "after" },
         );
 
         if (!updatedCaptain) {

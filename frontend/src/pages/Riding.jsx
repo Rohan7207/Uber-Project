@@ -1,15 +1,51 @@
-import React from "react";
-import map2 from "../assets/map2.gif";
+import React, { useContext, useEffect } from "react";
 import carImage from "../assets/car_png.jpg";
-import { Link } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { formatAddress, formatPrice } from "../utils/formatters";
+import axios from "axios";
+import { useSocket } from "../context/SocketContext";
+import LiveTracking from "../components/LiveTracking";
 
 const Riding = () => {
-  const pickupAddress = formatAddress("Sambrani, Haliyala Taluku, Karnataka, India");
+  const location = useLocation();
+  const { ride } = location.state || {}; // Retrive ride data
+
+  const pickupAddress = formatAddress(ride?.pickup || "Pickup location");
+
   const destinationAddress = formatAddress(
-    "Gundolli, Haliyala Taluku, Karnataka, India",
+    ride?.destination || "Destination location",
   );
-  const fare = 193.2;
+
+  const fare = ride?.fare ?? 0;
+
+  const captain = ride?.captain || {};
+  const captainName =
+    [captain.fullname?.firstname, captain.fullname?.lastname]
+      .filter(Boolean)
+      .join(" ") || "Your Captain";
+
+  const vehicle = captain.vehicle || {};
+  const vehiclePlate = vehicle.plate || "Plate unavailable";
+
+  const vehicleDescription = [vehicle.color, vehicle.vehicleType]
+    .filter(Boolean)
+    .join(" ");
+
+  const navigate = useNavigate();
+  const { connected, sendEvent, onEvent } = useSocket();
+
+  // Send ride confirmed to user
+  useEffect(() => {
+    if (!connected) return;
+
+    const unsubscribe = onEvent("ride-ended", (ride) => {
+      console.log("[User] Received ride-ended:", ride);
+
+      navigate("/home");
+    });
+
+    return unsubscribe;
+  }, [connected, onEvent]);
 
   return (
     <div className="h-screen">
@@ -21,15 +57,17 @@ const Riding = () => {
       </Link>
 
       <div className="h-1/2">
-        <img className="h-full w-full object-cover" src={map2} alt="Map" />
+        <LiveTracking />
       </div>
       <div className="h-1/2 p-4">
         <div className="flex items-center justify-between right-2">
           <img className="h-[5rem]" src={carImage} alt="Car_image" />
           <div className="text-right">
-            <h2 className="text-lg font-medium">Karan</h2>
-            <h4 className="text-xl font-semibold -mt-1 -mb-1">KA 15 AK 0001</h4>
-            <p className="text-sm text-gray-600">White Suzuki S-Presso LXI</p>
+            <h2 className="text-lg font-medium capitalize">{captainName}</h2>
+            <h4 className="text-xl font-semibold -mt-1 -mb-1">
+              {vehiclePlate}
+            </h4>
+            <p className="text-sm text-gray-600">{vehicleDescription}</p>
           </div>
         </div>
 
@@ -43,6 +81,18 @@ const Riding = () => {
               <div>
                 <h3 className="text-lg font-medium">Pickup</h3>
                 <p className="text-sm -mt-1 text-gray-600">{pickupAddress}</p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-5 p-2 border-b-2">
+              <h4>
+                <i className="text-lg ri-map-pin-user-fill"></i>
+              </h4>
+              <div>
+                <h3 className="text-lg font-medium">Destination</h3>
+                <p className="text-sm -mt-1 text-gray-600">
+                  {destinationAddress}
+                </p>
               </div>
             </div>
 

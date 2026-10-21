@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import demoUser from "../assets/demo_user.jpg";
 import { useNavigate } from "react-router-dom";
 import { formatAddress, formatPrice } from "../utils/formatters";
+import axios from "axios";
 
 const ConfirmRidePopUp = (props) => {
   const [otp, setOtp] = useState("");
@@ -35,7 +36,7 @@ const ConfirmRidePopUp = (props) => {
 
   const distance = props.ride?.distance;
 
-  const handleConfirm = (e) => {
+  const handleConfirm = async (e) => {
     e.preventDefault();
 
     if (!/^\d{6}$/.test(otp)) {
@@ -43,24 +44,49 @@ const ConfirmRidePopUp = (props) => {
       return;
     }
 
-    setErrorMessage("");
+    try {
+      setErrorMessage("");
 
-    // Keep the existing navigation for now.
-    navigate("/captain-riding");
+      const response = await axios.get(
+        `${import.meta.env.VITE_BASE_URL}/rides/start-ride`,
+        {
+          params: {
+            rideId: props.ride._id,
+            otp,
+          },
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        },
+      );
+
+      // state passes the ride data to a CaptainRiding component
+      if (response.status === 200) {
+        console.log("Start ride API response:", response.data);
+
+        props.setConfirmRidePopUpPanel(false);
+        props.setRidePopUpPanel(false);
+        navigate("/captain-riding", { state: { ride: response.data } });
+      }
+    } catch (error) {
+      setErrorMessage(
+        error.response?.data?.message || "Unable to start the ride.",
+      );
+    }
   };
 
   return (
     <div>
-      <h3 className="text-2xl font-semibold mb-5">Confirm Ride to Start</h3>
+      <h3 className="text-2xl font-semibold mb-2">Confirm Ride to Start</h3>
 
-      <div className="flex items-center justify-between p-3 border-2 border-yellow-300 rounded-lg mt-8 mb-2">
+      <div className="flex items-center justify-between p-2 border-2 border-yellow-300 rounded-lg mt-8 mb-2">
         <div className="flex items-center gap-3">
           <img
             className="h-12 w-12 rounded-full object-cover"
             src={passenger.profileImage || demoUser}
             alt="Passenger"
           />
-          <h2 className="text-lg font-medium">{passengerName}</h2>
+          <h2 className="text-lg font-medium capitalize">{passengerName}</h2>
         </div>
 
         <h5 className="text-lg font-semibold">
@@ -69,8 +95,8 @@ const ConfirmRidePopUp = (props) => {
       </div>
 
       <div className="flex gap-3 flex-col justify-between items-center mt-4">
-        <div className="w-full mt-4">
-          <div className="flex items-center gap-3 p-3 border-b-2">
+        <div className="w-full mt-3">
+          <div className="flex items-center gap-3 p-2 border-b-2">
             <i className="text-lg ri-map-pin-2-fill" />
             <div>
               <h3 className="text-lg font-medium">Pickup</h3>
@@ -78,7 +104,7 @@ const ConfirmRidePopUp = (props) => {
             </div>
           </div>
 
-          <div className="flex items-center gap-3 p-3 border-b-2">
+          <div className="flex items-center gap-3 p-2 border-b-2">
             <i className="text-lg ri-map-pin-user-fill" />
             <div>
               <h3 className="text-lg font-medium">Destination</h3>
@@ -88,7 +114,7 @@ const ConfirmRidePopUp = (props) => {
             </div>
           </div>
 
-          <div className="flex items-center gap-3 p-3">
+          <div className="flex items-center gap-2 p-3">
             <i className="text-lg ri-bank-card-fill" />
             <div>
               <h3 className="text-lg font-medium">{formatPrice(cashAmount)}</h3>
@@ -99,7 +125,7 @@ const ConfirmRidePopUp = (props) => {
           </div>
         </div>
 
-        <div className="mt-2 w-full">
+        <div className="mt-1 w-full">
           <form onSubmit={handleConfirm}>
             <input
               value={otp}
@@ -123,7 +149,7 @@ const ConfirmRidePopUp = (props) => {
 
             <button
               type="submit"
-              className="w-full mt-3 text-lg flex justify-center bg-green-600 text-white font-semibold p-3 rounded-lg"
+              className="w-full mt-2 text-lg flex justify-center bg-green-600 text-white font-semibold p-3 rounded-lg"
             >
               Confirm
             </button>

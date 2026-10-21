@@ -31,7 +31,7 @@ const RidePopUp = (props) => {
             src={demoUser}
             alt=""
           />
-          <h2 className="text-lg font-medium">
+          <h2 className="text-lg font-medium capitalize">
             {[
               props.ride?.user?.fullname?.firstname,
               props.ride?.user?.fullname?.lastname,
@@ -40,7 +40,7 @@ const RidePopUp = (props) => {
               .join(" ") || "Customer"}
           </h2>
         </div>
-        <h5 className="text-lg font-semibold">2.2 KM</h5>
+        <h5 className="text-lg font-semibold">{props.ride?.distance} KM</h5>
       </div>
 
       <div className="flex gap-2 flex-col justify-between items-center">

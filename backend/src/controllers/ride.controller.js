@@ -152,7 +152,6 @@ async function confirmRide(req, res) {
     const ride = await rideService.confirmRide(rideId, req.captain);
 
     console.log("Sending ride-confirmed to:", ride.user?.socketId);
-    console.log("Confirmed ride:", ride.toObject());
 
     // Ride is confirmed we need to tell user that ride is accepted by captain
     sendMessageToSocketId(ride.user.socketId, ride, "ride-confirmed");
@@ -164,4 +163,34 @@ async function confirmRide(req, res) {
   }
 }
 
-module.exports = { createRide, getFare, confirmRide };
+async function startRide(req, res) {
+  const { rideId, otp } = req.query;
+
+  try {
+    const ride = await rideService.startRide(rideId, otp, req.captain);
+
+    sendMessageToSocketId(ride.user.socketId, ride, "ride-started");
+
+    return res.status(200).json(ride);
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ message: err.message });
+  }
+}
+
+async function endRide(req, res) {
+  const { rideId } = req.body;
+
+  try {
+    const ride = await rideService.endRide(rideId, req.captain);
+
+    sendMessageToSocketId(ride.user.socketId, ride, "ride-ended");
+
+    return res.status(200).json(ride);
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ message: err.message });
+  }
+}
+
+module.exports = { createRide, getFare, confirmRide, startRide, endRide };

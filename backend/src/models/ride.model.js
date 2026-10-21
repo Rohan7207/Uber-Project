@@ -40,6 +40,7 @@ const rideSchema = new mongoose.Schema({
 
   distance: {
     type: Number, // In meters
+    default: null,
   },
 
   paymentId: {

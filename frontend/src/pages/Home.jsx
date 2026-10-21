@@ -13,6 +13,7 @@ import WaitingForDriver from "../components/WaitingForDriver";
 import axios from "axios";
 import { useSocket } from "../context/SocketContext";
 import { UserDataContext } from "../context/UserContext";
+import LiveTracking from "../components/LiveTracking";
 
 const Home = () => {
   const [pickup, setPickup] = useState("");
@@ -44,6 +45,7 @@ const Home = () => {
   const { connected, sendEvent, onEvent } = useSocket();
   const { user } = useContext(UserDataContext);
 
+  // Connect particular user
   useEffect(() => {
     if (!user?._id || !connected) {
       console.log("[User] Join skipped:", {
@@ -59,6 +61,7 @@ const Home = () => {
     });
   }, [user?._id, connected, sendEvent]);
 
+  // Send ride confirmed to user
   useEffect(() => {
     if (!connected) return;
 
@@ -73,6 +76,20 @@ const Home = () => {
       setVehiclePanelOpen(false);
       setConfirmRidePanel(false);
       setPanelOpen(false);
+    });
+
+    return unsubscribe;
+  }, [connected, onEvent]);
+
+  // Send ride started to user
+  useEffect(() => {
+    if (!connected) return;
+
+    const unsubscribe = onEvent("ride-started", (ride) => {
+      console.log("[User] Received ride-started:", ride);
+
+      setWaitingForDriver(false);
+      navigate("/riding", { state: { ride } });
     });
 
     return unsubscribe;
