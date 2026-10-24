@@ -1,6 +1,7 @@
 import React, { useContext, useEffect, useRef, useState } from "react";
 import axios from "axios";
 import { Link } from "react-router-dom";
+import map from "../assets/map_image.gif";
 import carImage from "../assets/car_png.jpg";
 import homeUberLogo from "../assets/home_Uberlogo.png";
 import CaptainDetails from "../components/CaptainDetails";
@@ -144,7 +145,7 @@ const CaptainHome = () => {
       </div>
 
       <div className="h-3/5">
-        <LiveTracking />
+        <img className="h-full w-full object-cover" src={map} alt="Map" />
       </div>
 
       {/* {newRideRequest && (

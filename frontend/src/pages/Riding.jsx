@@ -1,4 +1,4 @@
-import React, { useContext, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import carImage from "../assets/car_png.jpg";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { formatAddress, formatPrice } from "../utils/formatters";
@@ -9,6 +9,9 @@ import LiveTracking from "../components/LiveTracking";
 const Riding = () => {
   const location = useLocation();
   const { ride } = location.state || {}; // Retrive ride data
+  const [captainLocation, setCaptainLocation] = useState(null);
+  const [pickupLocation, setPickupLocation] = useState(null);
+  const [destinationLocation, setDestinationLocation] = useState(null);
 
   const pickupAddress = formatAddress(ride?.pickup || "Pickup location");
 
@@ -32,20 +35,113 @@ const Riding = () => {
     .join(" ");
 
   const navigate = useNavigate();
-  const { connected, sendEvent, onEvent } = useSocket();
+  // const { connected, sendEvent, onEvent } = useSocket();
+  const { socket, connected, onEvent } = useSocket();
 
-  // Send ride confirmed to user
+  // Send ride ended to user
   useEffect(() => {
     if (!connected) return;
 
     const unsubscribe = onEvent("ride-ended", (ride) => {
-      console.log("[User] Received ride-ended:", ride);
-
       navigate("/home");
     });
 
     return unsubscribe;
   }, [connected, onEvent]);
+
+  // Send captain location to user
+  useEffect(() => {
+    if (!connected || !socket) return;
+
+    const handleLocation = (data) => {
+      const latitude = Number(data.location?.ltd);
+      const longitude = Number(data.location?.lng);
+
+      if (
+        Number.isFinite(latitude) &&
+        Number.isFinite(longitude) &&
+        latitude >= -90 &&
+        latitude <= 90 &&
+        longitude >= -180 &&
+        longitude <= 180
+      ) {
+        setCaptainLocation([latitude, longitude]);
+      }
+    };
+
+    socket.on("captain-location-update", handleLocation);
+
+    return () => {
+      socket.off("captain-location-update", handleLocation);
+    };
+  }, [connected, socket]);
+
+  useEffect(() => {
+    if (!ride?.pickup || !ride?.destination) return;
+
+    let cancelled = false;
+
+    const fetchCoordinates = async () => {
+      try {
+        const token = localStorage.getItem("token");
+
+        const [pickupResponse, destinationResponse] = await Promise.all([
+          axios.get(`${import.meta.env.VITE_BASE_URL}/maps/get-coordinates`, {
+            params: { address: ride.pickup },
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }),
+
+          axios.get(`${import.meta.env.VITE_BASE_URL}/maps/get-coordinates`, {
+            params: { address: ride.destination },
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }),
+        ]);
+
+        if (cancelled) return;
+
+        const pickupLat = Number(pickupResponse.data.lat);
+        const pickupLng = Number(pickupResponse.data.lng);
+
+        const destinationLat = Number(destinationResponse.data.lat);
+        const destinationLng = Number(destinationResponse.data.lng);
+
+        if (
+          !Number.isFinite(pickupLat) ||
+          !Number.isFinite(pickupLng) ||
+          !Number.isFinite(destinationLat) ||
+          !Number.isFinite(destinationLng) ||
+          Math.abs(pickupLat) > 90 ||
+          Math.abs(destinationLat) > 90 ||
+          Math.abs(pickupLng) > 180 ||
+          Math.abs(destinationLng) > 180
+        ) {
+          console.error("Invalid geocoding response:", {
+            pickup: pickupResponse.data,
+            destination: destinationResponse.data,
+          });
+          return;
+        }
+
+        setPickupLocation([pickupLat, pickupLng]);
+        setDestinationLocation([destinationLat, destinationLng]);
+      } catch (error) {
+        console.error(
+          "Failed to fetch pickup/destination coordinates:",
+          error.response?.data || error.message,
+        );
+      }
+    };
+
+    fetchCoordinates();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [ride?.pickup, ride?.destination]);
 
   return (
     <div className="h-screen">
@@ -57,7 +153,11 @@ const Riding = () => {
       </Link>
 
       <div className="h-1/2">
-        <LiveTracking />
+        <LiveTracking
+          captainLocation={captainLocation}
+          pickupLocation={pickupLocation}
+          destinationLocation={destinationLocation}
+        />
       </div>
       <div className="h-1/2 p-4">
         <div className="flex items-center justify-between right-2">

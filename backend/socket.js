@@ -1,6 +1,7 @@
 const socketIo = require("socket.io");
 const userModel = require("./src/models/user.model");
 const captainModel = require("./src/models/captain.model");
+const rideModel = require("./src/models/ride.model");
 
 let io;
 
@@ -127,6 +128,7 @@ function initializeSocket(server) {
           });
         }
 
+        // Keep the acknowledgement to the captain
         socket.emit("captain-location-updated", {
           success: true,
           location: {
@@ -134,6 +136,51 @@ function initializeSocket(server) {
             lng: longitude,
           },
         });
+
+        // Find this captain's currently ongoing ride
+        const activeRide = await rideModel
+          .findOne({
+            captain: userId,
+            status: "ongoing",
+          })
+          .populate("user", "socketId");
+
+        console.log("[Tracking] Captain ID:", userId);
+        console.log("[Tracking] Active ride found:", !!activeRide);
+        console.log("[Tracking] Passenger socket:", activeRide?.user?.socketId);
+
+        if (activeRide?.user?.socketId) {
+          console.log("[Tracking] Emitting location to passenger:", {
+            socketId: activeRide.user.socketId,
+            latitude,
+            longitude,
+          });
+
+          console.log(
+            "[Tracking] Connected passenger socket:",
+            io.sockets.sockets.has(activeRide.user.socketId),
+          );
+
+          const passengerSocket = io.sockets.sockets.get(
+            activeRide.user.socketId,
+          );
+
+          console.log("[Tracking] Event name:", "captain-location-update");
+          console.log("[Tracking] Passenger socket exists:", !!passengerSocket);
+          console.log(
+            "[Tracking] Passenger socket connected:",
+            passengerSocket?.connected,
+          );
+
+          if (passengerSocket?.connected) {
+            passengerSocket.emit("captain-location-update", {
+              captainId: userId,
+              location: { ltd: latitude, lng: longitude },
+            });
+
+            console.log("[Tracking] Location event emitted directly");
+          }
+        }
       } catch (error) {
         console.error("Error updating captain location:", error.message);
         socket.emit("error", {

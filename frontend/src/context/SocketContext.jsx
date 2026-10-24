@@ -104,11 +104,11 @@ export const SocketProvider = ({ children }) => {
    * Subscribe to an event coming from the server.
    * Returns an unsubscribe function which removes the specific handler.
    */
+
   const onEvent = useCallback((eventName, handler) => {
     const socket = socketRef.current;
 
     if (!socket) {
-      // eslint-disable-next-line no-console
       console.warn(
         "Socket not initialized yet. Listener not attached:",
         eventName,
@@ -118,9 +118,8 @@ export const SocketProvider = ({ children }) => {
 
     socket.on(eventName, handler);
 
-    // unsubscribe function
     return () => {
-      if (socketRef.current) socketRef.current.off(eventName, handler);
+      socket.off(eventName, handler);
     };
   }, []);
 
